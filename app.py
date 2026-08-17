@@ -126,7 +126,52 @@ VOICE_CATALOG: List[Dict[str, str]] = [
     },
 ]
 
-ACTIVE_VOICE = "Google.en-IN-Wavenet-B"
+SETTINGS_FILE = os.path.join(BASE_DIR, "settings_store.json")
+
+DEFAULT_SETTINGS: Dict[str, Any] = {
+    "active_voice": "Google.hi-IN-Wavenet-B",
+    "speaking_rate": 1.0,
+    "language": "hi-IN",
+    "greeting_template": "Hello {customer_name}! Thank you for choosing BCT Fibernet. We are calling to collect your valuable service feedback.",
+    "twilio_phone": "+919057262630",
+    "max_call_duration": 3,
+    "auto_retry": True,
+    "max_retries": 2,
+    "call_delay_seconds": 10,
+    "instant_alerts": True,
+    "alert_phone": "+919057262630",
+    "alert_email": "vikas@example.com",
+    "admin_username": "VIKAS",
+    "admin_password": "7014",
+    "poll_interval_ms": 2500,
+    "theme": "light"
+}
+
+APP_SETTINGS: Dict[str, Any] = dict(DEFAULT_SETTINGS)
+
+def load_settings_from_disk():
+    global APP_SETTINGS, ACTIVE_VOICE
+    if os.path.exists(SETTINGS_FILE):
+        try:
+            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    APP_SETTINGS.update(data)
+                    if "active_voice" in APP_SETTINGS:
+                        ACTIVE_VOICE = APP_SETTINGS["active_voice"]
+        except Exception as ex:
+            print(f"[Settings Load Error] {ex}")
+
+def save_settings_to_disk():
+    try:
+        with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+            json.dump(APP_SETTINGS, f, indent=2, ensure_ascii=False)
+    except Exception as ex:
+        print(f"[Settings Save Error] {ex}")
+
+load_settings_from_disk()
+
+ACTIVE_VOICE = APP_SETTINGS.get("active_voice", "Google.hi-IN-Wavenet-B")
 
 
 def get_active_agent_info() -> Dict[str, Any]:
@@ -779,6 +824,37 @@ def health():
         "active_voice": get_active_voice(),
         "environment": env_name,
         "base_url": get_base_url(),
+    })
+
+
+@app.route("/api/settings", methods=["GET", "POST"])
+def manage_settings():
+    """GET returns current settings; POST updates settings persistently."""
+    global APP_SETTINGS, ACTIVE_VOICE
+    if request.method == "POST":
+        data = request.get_json(force=True, silent=True) or {}
+        if not data:
+            return jsonify({"success": False, "error": "Invalid request payload"}), 400
+
+        # Update settings dictionary safely
+        for key in DEFAULT_SETTINGS.keys():
+            if key in data:
+                APP_SETTINGS[key] = data[key]
+
+        if "active_voice" in data:
+            ACTIVE_VOICE = str(data["active_voice"])
+            APP_SETTINGS["active_voice"] = ACTIVE_VOICE
+
+        save_settings_to_disk()
+        return jsonify({
+            "success": True,
+            "message": "Settings updated and saved successfully",
+            "settings": APP_SETTINGS
+        })
+
+    return jsonify({
+        "success": True,
+        "settings": APP_SETTINGS
     })
 
 

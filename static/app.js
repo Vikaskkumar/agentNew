@@ -87,6 +87,7 @@ function unlockDashboard() {
     
     loadVoices();
     loadCustomers();
+    loadSettings();
 
     if (!state.pollInterval) {
         state.pollInterval = setInterval(() => {
@@ -122,6 +123,7 @@ function setTheme(theme) {
     localStorage.setItem("appTheme", theme);
     if (elements.themeIcon) {
         elements.themeIcon.innerText = theme === "dark" ? "🌙" : "☀️";
+        elements.themeIcon.setAttribute("title", theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode");
     }
 }
 
@@ -182,6 +184,12 @@ function renderVoiceSelector() {
     if (makeCallVoiceSelect) {
         makeCallVoiceSelect.innerHTML = optionsHtml;
         makeCallVoiceSelect.value = state.activeVoiceId || "";
+    }
+
+    const settingsVoiceSelect = document.getElementById("settingsVoiceSelect");
+    if (settingsVoiceSelect) {
+        settingsVoiceSelect.innerHTML = optionsHtml;
+        settingsVoiceSelect.value = state.activeVoiceId || "";
     }
 
     if (elements.voiceSelect) elements.voiceSelect.value = state.activeVoiceId || "";
@@ -247,22 +255,34 @@ function switchView(viewName) {
     const dashView = document.getElementById("dashboardView");
     const makeCallsView = document.getElementById("makeCallsView");
     const feedbacksView = document.getElementById("feedbacksView");
+    const settingsView = document.getElementById("settingsView");
 
     if (viewName === "make-calls") {
         if (dashView) dashView.classList.add("hidden");
         if (feedbacksView) feedbacksView.classList.add("hidden");
+        if (settingsView) settingsView.classList.add("hidden");
         if (makeCallsView) makeCallsView.classList.remove("hidden");
     } else if (viewName === "feedbacks") {
         if (dashView) dashView.classList.add("hidden");
         if (makeCallsView) makeCallsView.classList.add("hidden");
+        if (settingsView) settingsView.classList.add("hidden");
         if (feedbacksView) {
             feedbacksView.classList.remove("hidden");
             renderDetailedFeedbacks();
+        }
+    } else if (viewName === "settings") {
+        if (dashView) dashView.classList.add("hidden");
+        if (makeCallsView) makeCallsView.classList.add("hidden");
+        if (feedbacksView) feedbacksView.classList.add("hidden");
+        if (settingsView) {
+            settingsView.classList.remove("hidden");
+            loadSettings();
         }
     } else {
         if (dashView) dashView.classList.remove("hidden");
         if (makeCallsView) makeCallsView.classList.add("hidden");
         if (feedbacksView) feedbacksView.classList.add("hidden");
+        if (settingsView) settingsView.classList.add("hidden");
     }
 }
 
@@ -519,6 +539,25 @@ function bindEvents() {
             lockDashboard();
             showToast("Portal locked. Logged out successfully.");
         });
+    }
+
+    // Settings Form Listeners
+    const settingsForm = document.getElementById("settingsForm");
+    if (settingsForm) {
+        settingsForm.addEventListener("submit", saveSettings);
+    }
+
+    const settingsSpeechRate = document.getElementById("settingsSpeechRate");
+    const speechRateValue = document.getElementById("speechRateValue");
+    if (settingsSpeechRate && speechRateValue) {
+        settingsSpeechRate.addEventListener("input", (e) => {
+            speechRateValue.innerText = `${parseFloat(e.target.value).toFixed(2)}x`;
+        });
+    }
+
+    const resetDefaultSettingsBtn = document.getElementById("resetDefaultSettingsBtn");
+    if (resetDefaultSettingsBtn) {
+        resetDefaultSettingsBtn.addEventListener("click", resetDefaultSettings);
     }
 
     // KPI Card Filter Clicking
@@ -1065,4 +1104,185 @@ function escapeHtml(value) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+// =========================
+// SETTINGS MANAGERS & SYNC
+// =========================
+
+async function loadSettings() {
+    try {
+        const res = await requestJson("/api/settings");
+        if (res && res.success && res.settings) {
+            state.settings = res.settings;
+            populateSettingsUI(res.settings);
+        }
+    } catch (err) {
+        console.warn("Failed to load settings:", err.message);
+    }
+}
+
+function populateSettingsUI(s) {
+    if (!s) return;
+    
+    // Settings Voice Select
+    const settingsVoiceSelect = document.getElementById("settingsVoiceSelect");
+    if (settingsVoiceSelect && state.voices.length) {
+        settingsVoiceSelect.innerHTML = state.voices.map(v => {
+            const isSelected = (v.id === (s.active_voice || state.activeVoiceId)) ? "selected" : "";
+            const lang = v.accent || v.language || "Indic";
+            return `<option value="${escapeHtml(v.id)}" ${isSelected}>${escapeHtml(v.name)} (${escapeHtml(lang)})</option>`;
+        }).join("");
+    }
+
+    const speechRateInput = document.getElementById("settingsSpeechRate");
+    const speechRateValue = document.getElementById("speechRateValue");
+    if (speechRateInput) {
+        speechRateInput.value = s.speaking_rate || 1.0;
+        if (speechRateValue) speechRateValue.innerText = `${parseFloat(s.speaking_rate || 1.0).toFixed(2)}x`;
+    }
+
+    const langSelect = document.getElementById("settingsLanguage");
+    if (langSelect && s.language) langSelect.value = s.language;
+
+    const greetingInput = document.getElementById("settingsGreetingTemplate");
+    if (greetingInput && s.greeting_template) greetingInput.value = s.greeting_template;
+
+    const twilioPhoneInput = document.getElementById("settingsTwilioPhone");
+    if (twilioPhoneInput && s.twilio_phone) twilioPhoneInput.value = s.twilio_phone;
+
+    const durationSelect = document.getElementById("settingsMaxDuration");
+    if (durationSelect && s.max_call_duration) durationSelect.value = s.max_call_duration;
+
+    const autoRetryInput = document.getElementById("settingsAutoRetry");
+    if (autoRetryInput) autoRetryInput.checked = Boolean(s.auto_retry);
+
+    const callDelayInput = document.getElementById("settingsCallDelay");
+    if (callDelayInput && s.call_delay_seconds) callDelayInput.value = s.call_delay_seconds;
+
+    const instantAlertsInput = document.getElementById("settingsInstantAlerts");
+    if (instantAlertsInput) instantAlertsInput.checked = Boolean(s.instant_alerts);
+
+    const alertPhoneInput = document.getElementById("settingsAlertPhone");
+    if (alertPhoneInput && s.alert_phone) alertPhoneInput.value = s.alert_phone;
+
+    const alertEmailInput = document.getElementById("settingsAlertEmail");
+    if (alertEmailInput && s.alert_email) alertEmailInput.value = s.alert_email;
+
+    const adminUsernameInput = document.getElementById("settingsAdminUsername");
+    if (adminUsernameInput && s.admin_username) adminUsernameInput.value = s.admin_username;
+
+    const pollIntervalSelect = document.getElementById("settingsPollInterval");
+    if (pollIntervalSelect && s.poll_interval_ms) pollIntervalSelect.value = s.poll_interval_ms;
+}
+
+async function saveSettings(e) {
+    if (e) e.preventDefault();
+
+    const newVoice = document.getElementById("settingsVoiceSelect")?.value;
+    const speechRate = parseFloat(document.getElementById("settingsSpeechRate")?.value || "1.0");
+    const lang = document.getElementById("settingsLanguage")?.value;
+    const greeting = document.getElementById("settingsGreetingTemplate")?.value?.trim();
+    const twilioPhone = document.getElementById("settingsTwilioPhone")?.value?.trim();
+    const maxDuration = parseInt(document.getElementById("settingsMaxDuration")?.value || "3");
+    const autoRetry = document.getElementById("settingsAutoRetry")?.checked;
+    const callDelay = parseInt(document.getElementById("settingsCallDelay")?.value || "10");
+    const instantAlerts = document.getElementById("settingsInstantAlerts")?.checked;
+    const alertPhone = document.getElementById("settingsAlertPhone")?.value?.trim();
+    const alertEmail = document.getElementById("settingsAlertEmail")?.value?.trim();
+    const adminUser = document.getElementById("settingsAdminUsername")?.value?.trim();
+    const adminPass = document.getElementById("settingsAdminPassword")?.value?.trim();
+    const pollInterval = parseInt(document.getElementById("settingsPollInterval")?.value || "2500");
+
+    const payload = {
+        active_voice: newVoice,
+        speaking_rate: speechRate,
+        language: lang,
+        greeting_template: greeting,
+        twilio_phone: twilioPhone,
+        max_call_duration: maxDuration,
+        auto_retry: autoRetry,
+        call_delay_seconds: callDelay,
+        instant_alerts: instantAlerts,
+        alert_phone: alertPhone,
+        alert_email: alertEmail,
+        admin_username: adminUser,
+        poll_interval_ms: pollInterval
+    };
+
+    if (adminPass && adminPass.length > 0) {
+        payload.admin_password = adminPass;
+    }
+
+    try {
+        const saveBtn = document.getElementById("saveSettingsBtn");
+        if (saveBtn) saveBtn.innerText = "⏳ Saving...";
+
+        const res = await requestJson("/api/settings", {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+
+        if (res && res.success) {
+            state.settings = res.settings;
+            if (newVoice) {
+                state.activeVoiceId = newVoice;
+                renderVoiceSelector();
+            }
+
+            // Reset poll interval dynamically if updated
+            if (state.pollInterval && pollInterval) {
+                clearInterval(state.pollInterval);
+                state.pollInterval = setInterval(() => {
+                    loadCustomers(true);
+                }, pollInterval);
+            }
+
+            showToast("✅ Settings saved and updated successfully!");
+            const passInput = document.getElementById("settingsAdminPassword");
+            if (passInput) passInput.value = "";
+        }
+    } catch (err) {
+        showToast(`Failed to save settings: ${err.message}`, true);
+    } finally {
+        const saveBtn = document.getElementById("saveSettingsBtn");
+        if (saveBtn) saveBtn.innerText = "💾 Save All Settings";
+    }
+}
+
+async function resetDefaultSettings() {
+    if (!confirm("Are you sure you want to reset all settings to default values?")) return;
+
+    const defaultPayload = {
+        active_voice: "Google.hi-IN-Wavenet-B",
+        speaking_rate: 1.0,
+        language: "hi-IN",
+        greeting_template: "Hello {customer_name}! Thank you for choosing BCT Fibernet. We are calling to collect your valuable service feedback.",
+        twilio_phone: "+919057262630",
+        max_call_duration: 3,
+        auto_retry: true,
+        call_delay_seconds: 10,
+        instant_alerts: true,
+        alert_phone: "+919057262630",
+        alert_email: "vikas@example.com",
+        admin_username: "VIKAS",
+        poll_interval_ms: 2500
+    };
+
+    try {
+        const res = await requestJson("/api/settings", {
+            method: "POST",
+            body: JSON.stringify(defaultPayload)
+        });
+
+        if (res && res.success) {
+            state.settings = res.settings;
+            state.activeVoiceId = res.settings.active_voice;
+            populateSettingsUI(res.settings);
+            renderVoiceSelector();
+            showToast("🔄 Reset settings to defaults!");
+        }
+    } catch (err) {
+        showToast(`Failed to reset settings: ${err.message}`, true);
+    }
 }

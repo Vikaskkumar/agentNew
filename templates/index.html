@@ -385,6 +385,163 @@
             </div>
         </div>
 
+        <!-- DETAILED SETTINGS VIEW PAGE -->
+        <div id="settingsView" class="view-content hidden">
+            <section class="card settings-header-card">
+                <div class="card-header-clean" style="margin-bottom: 0;">
+                    <h2 class="card-title">System Settings & Agent Operations</h2>
+                    <p class="card-subtitle">Configure AI voice models, speech rate, call automation rules, and instant alert targets.</p>
+                </div>
+            </section>
+
+            <form id="settingsForm" class="settings-grid-layout">
+                
+                <!-- CARD 1: AI VOICE & PERSONA CONFIGURATION -->
+                <div class="card settings-card">
+                    <div class="card-section-title">
+                        <span class="section-icon">🎙️</span>
+                        <h3>AI Voice & Persona Config</h3>
+                    </div>
+                    
+                    <div class="form-group-clean">
+                        <label for="settingsVoiceSelect" class="form-label-clean">Default Voice Model</label>
+                        <select id="settingsVoiceSelect" class="clean-select">
+                            <!-- Populated dynamically via app.js -->
+                        </select>
+                    </div>
+
+                    <div class="form-group-clean">
+                        <div class="label-row-between">
+                            <label for="settingsSpeechRate" class="form-label-clean">Speaking Speed Rate</label>
+                            <span id="speechRateValue" class="rate-badge">1.0x</span>
+                        </div>
+                        <input id="settingsSpeechRate" type="range" min="0.8" max="1.5" step="0.05" value="1.0" class="clean-slider">
+                    </div>
+
+                    <div class="form-group-clean">
+                        <label for="settingsLanguage" class="form-label-clean">Primary Accent / Language</label>
+                        <select id="settingsLanguage" class="clean-select">
+                            <option value="hi-IN">Rajasthani / Marwari Hindi (hi-IN)</option>
+                            <option value="en-IN">Indian English (en-IN)</option>
+                            <option value="en-US">US English (en-US)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group-clean">
+                        <label for="settingsGreetingTemplate" class="form-label-clean">Custom Call Greeting Template</label>
+                        <textarea id="settingsGreetingTemplate" class="clean-textarea" rows="3" placeholder="Hello {customer_name}! Thank you for choosing BCT Fibernet..."></textarea>
+                        <span class="input-hint">Use <code>{customer_name}</code> as a dynamic placeholder.</span>
+                    </div>
+                </div>
+
+                <!-- CARD 2: TELEPHONY & CALL AUTOMATION -->
+                <div class="card settings-card">
+                    <div class="card-section-title">
+                        <span class="section-icon">📞</span>
+                        <h3>Telephony & Call Automation</h3>
+                    </div>
+
+                    <div class="form-group-clean">
+                        <label for="settingsTwilioPhone" class="form-label-clean">Twilio Outbound Phone Number</label>
+                        <input id="settingsTwilioPhone" type="tel" class="clean-input-boxed" placeholder="+919057262630">
+                    </div>
+
+                    <div class="form-group-clean">
+                        <label for="settingsMaxDuration" class="form-label-clean">Max Call Duration (Minutes)</label>
+                        <select id="settingsMaxDuration" class="clean-select">
+                            <option value="1">1 Minute</option>
+                            <option value="2">2 Minutes</option>
+                            <option value="3" selected>3 Minutes (Recommended)</option>
+                            <option value="5">5 Minutes</option>
+                            <option value="10">10 Minutes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group-clean toggle-row">
+                        <div class="toggle-text">
+                            <span class="toggle-title">Auto-Retry Failed Calls</span>
+                            <span class="toggle-subtitle">Automatically re-dial numbers if call is busy/unanswered</span>
+                        </div>
+                        <label class="switch">
+                            <input id="settingsAutoRetry" type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group-clean">
+                        <label for="settingsCallDelay" class="form-label-clean">Delay Between Calls (Seconds)</label>
+                        <input id="settingsCallDelay" type="number" min="1" max="60" value="10" class="clean-input-boxed">
+                    </div>
+                </div>
+
+                <!-- CARD 3: ALERTS & SENTIMENT NOTIFICATIONS -->
+                <div class="card settings-card">
+                    <div class="card-section-title">
+                        <span class="section-icon">🔔</span>
+                        <h3>Alerts & Sentiment Triggers</h3>
+                    </div>
+
+                    <div class="form-group-clean toggle-row">
+                        <div class="toggle-text">
+                            <span class="toggle-title">Negative Sentiment Instant Alerts</span>
+                            <span class="toggle-subtitle">Send instant alert on negative feedback</span>
+                        </div>
+                        <label class="switch">
+                            <input id="settingsInstantAlerts" type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group-clean">
+                        <label for="settingsAlertPhone" class="form-label-clean">Target Alert Phone Number (SMS)</label>
+                        <input id="settingsAlertPhone" type="tel" class="clean-input-boxed" placeholder="+919057262630">
+                    </div>
+
+                    <div class="form-group-clean">
+                        <label for="settingsAlertEmail" class="form-label-clean">Target Alert Email Address</label>
+                        <input id="settingsAlertEmail" type="email" class="clean-input-boxed" placeholder="vikas@example.com">
+                    </div>
+                </div>
+
+                <!-- CARD 4: SECURITY & SYSTEM PREFERENCES -->
+                <div class="card settings-card">
+                    <div class="card-section-title">
+                        <span class="section-icon">🔒</span>
+                        <h3>Admin Security & Preferences</h3>
+                    </div>
+
+                    <div class="form-group-clean">
+                        <label for="settingsAdminUsername" class="form-label-clean">Admin Portal Username</label>
+                        <input id="settingsAdminUsername" type="text" class="clean-input-boxed" value="VIKAS" required>
+                    </div>
+
+                    <div class="form-group-clean">
+                        <label for="settingsAdminPassword" class="form-label-clean">Change Admin Password</label>
+                        <input id="settingsAdminPassword" type="password" class="clean-input-boxed" placeholder="Enter new password (optional)">
+                    </div>
+
+                    <div class="form-group-clean">
+                        <label for="settingsPollInterval" class="form-label-clean">Live Feed Refresh Polling Speed</label>
+                        <select id="settingsPollInterval" class="clean-select">
+                            <option value="1000">1.0 Second (Fastest)</option>
+                            <option value="2500" selected>2.5 Seconds (Normal)</option>
+                            <option value="5000">5.0 Seconds (Low Power)</option>
+                        </select>
+                    </div>
+
+                    <div class="settings-actions-row">
+                        <button type="submit" id="saveSettingsBtn" class="btn-save-settings">
+                            💾 Save All Settings
+                        </button>
+                        <button type="button" id="resetDefaultSettingsBtn" class="btn-reset-settings">
+                            🔄 Reset Defaults
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
         <footer class="app-footer">
             <p>© 2025 VoiceFeed AI. All rights reserved.</p>
         </footer>
