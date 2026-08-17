@@ -98,14 +98,17 @@ body {
     transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-button, input, select, textarea {
+button, input, textarea {
     font-family: inherit;
     font-size: inherit;
-    -webkit-appearance: none;
-    -moz-appearance: none;
 }
 
-/* Prevent iOS auto-zoom on focus (critical for mobile) */
+select {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/* Prevent iOS auto-zoom on input focus (must be >= 16px) */
 @media (max-width: 768px) {
     input, select, textarea {
         font-size: 16px !important;
@@ -320,11 +323,6 @@ button:active, .btn-table-call:active, .btn-table-transcript:active, .btn-table-
     background-color: #fee2e2;
     color: #dc2626;
     border-color: #fca5a5;
-}
-}
-
-.footer-icon-btn:hover {
-    background-color: var(--border-color);
 }
 
 /* Main Content Area */
@@ -902,7 +900,8 @@ button:active, .btn-table-call:active, .btn-table-transcript:active, .btn-table-
 /* Recent Feedbacks Table Clean */
 .recent-feedbacks-card {
     overflow: hidden;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
 }
 
 .header-controls-group {
@@ -937,6 +936,7 @@ button:active, .btn-table-call:active, .btn-table-transcript:active, .btn-table-
 
 .table-responsive {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
 }
 
@@ -2069,10 +2069,12 @@ input:checked + .slider:before {
     .main-content {
         height: auto;
         min-height: 0;
-        overflow: visible;
+        overflow-x: hidden;
+        overflow-y: visible;
         padding: 12px 14px calc(76px + env(safe-area-inset-bottom, 0px)) 14px !important;
         gap: 10px;
         max-width: 100%;
+        box-sizing: border-box;
     }
 
     /* ---------- Top Header ---------- */
@@ -2122,12 +2124,15 @@ input:checked + .slider:before {
     .date-range-wrap {
         height: 36px;
         padding: 0 8px;
-        max-width: 150px;
+        max-width: 145px;
+        min-width: 0;
+        overflow: hidden;
     }
 
     .date-range-dropdown {
         font-size: 0.75rem;
-        max-width: 115px;
+        max-width: 110px;
+        min-width: 0;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -2137,6 +2142,18 @@ input:checked + .slider:before {
         width: 34px;
         height: 34px;
         font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    /* Prevent header actions from overflowing */
+    .header-actions {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .navbar-user-card {
+        flex-shrink: 0;
+        min-width: 0;
     }
 
     /* ---------- KPI Metric Cards — 2×2 grid ---------- */
@@ -2374,11 +2391,19 @@ input:checked + .slider:before {
         gap: 12px;
         overflow: visible;
         flex: 0 0 auto;
+        width: 100%;
     }
 
     .make-call-card-full {
         padding: 16px;
         max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .make-call-feed-card {
+        height: auto;
+        overflow: visible;
+        padding: 16px;
     }
 
     .form-row-grid {
@@ -2408,6 +2433,8 @@ input:checked + .slider:before {
         gap: 12px;
         overflow-y: visible;
         flex: 0 0 auto;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .settings-card {
@@ -2439,6 +2466,7 @@ input:checked + .slider:before {
     .feedbacks-cards-grid {
         overflow-y: visible;
         flex: 0 0 auto;
+        padding-bottom: 4px;
     }
 
     .detailed-feedback-item-card {
@@ -2562,6 +2590,26 @@ input:checked + .slider:before {
         padding: 14px;
         overflow: visible;
         height: auto;
+        flex: 0 0 auto;
+    }
+
+    /* ---------- Table responsive on mobile: reset flex behavior ---------- */
+    .table-responsive {
+        flex: 0 0 auto;
+        overflow-y: visible;
+        overflow-x: hidden;
+    }
+
+    /* ---------- View containers: allow scrolling on mobile ---------- */
+    .view-content {
+        overflow: visible;
+        flex: 0 0 auto;
+    }
+
+    /* ---------- Fix width containment for all cards ---------- */
+    .card {
+        box-sizing: border-box;
+        max-width: 100%;
     }
 }
 
