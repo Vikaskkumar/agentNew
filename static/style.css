@@ -1134,6 +1134,84 @@ button, input, select, textarea {
     flex-shrink: 0;
 }
 
+/* Make Calls Two Column Layout */
+.make-calls-two-col {
+    display: grid;
+    grid-template-columns: 480px 1fr;
+    gap: 14px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.make-call-card-full {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+}
+
+.make-call-form-full {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.quick-preset-contacts {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.quick-preset-label {
+    font-size: 0.725rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.btn-preset-chip {
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-input);
+    color: var(--text-secondary);
+    font-size: 0.725rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-preset-chip:hover {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary-border);
+}
+
+.voice-config-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background-color: var(--bg-input);
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+}
+
+.voice-label {
+    font-size: 0.775rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.make-call-feed-card {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 18px 20px;
+}
+
 /* Modals & Toast */
 .modal-overlay {
     position: fixed;
@@ -1506,4 +1584,227 @@ button, input, select, textarea {
     .main-content { padding: 12px 18px; gap: 8px; }
     .metric-card { padding: 8px 10px; }
     .card { padding: 12px; }
+}
+
+/* ==========================================
+   MOBILE & RESPONSIVE DESIGN (TABLETS & SMARTPHONES)
+   ========================================== */
+
+.mobile-nav-toggle {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background-color: var(--bg-hover);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+    .metric-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .make-calls-two-col {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        overflow-y: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    html, body {
+        height: auto;
+        overflow-y: auto;
+    }
+
+    .app-shell {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .mobile-nav-toggle {
+        display: flex;
+    }
+
+    .app-sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 260px;
+        height: 100vh;
+        z-index: 250;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .app-sidebar.active {
+        left: 0;
+    }
+
+    .main-content {
+        height: auto;
+        overflow: visible;
+        padding: 12px 14px;
+        gap: 12px;
+    }
+
+    .top-header {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .header-title-wrap h1 {
+        font-size: 1.15rem;
+    }
+
+    .header-subtitle {
+        font-size: 0.725rem;
+    }
+
+    .voice-banner-horizontal {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .banner-right {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .voice-dropdown-clean {
+        flex: 1;
+        min-width: 160px;
+    }
+
+    .modal-box-large {
+        width: 95%;
+        margin: 10px;
+        max-height: 92vh;
+    }
+
+    .modal-meta-bar {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .modal-footer-actions {
+        flex-wrap: wrap;
+        justify-content: stretch;
+    }
+
+    .modal-footer-actions button {
+        flex: 1;
+        min-width: 130px;
+    }
+}
+
+@media (max-width: 480px) {
+    .metric-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .metric-card {
+        padding: 6px 8px;
+        gap: 6px;
+    }
+
+    .metric-icon-box {
+        width: 24px;
+        height: 24px;
+    }
+
+    .metric-value {
+        font-size: 0.95rem;
+    }
+
+    .date-range-wrap span, .date-range-dropdown {
+        font-size: 0.725rem;
+    }
+
+    .equalizer-waveform {
+        display: none;
+    }
+}
+
+/* ==========================================
+   MOBILE BOTTOM TAB BAR & TOUCH ENHANCEMENTS
+   ========================================== */
+
+.mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.08);
+    z-index: 180;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 6px;
+    backdrop-filter: blur(10px);
+}
+
+.mobile-tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    flex: 1;
+    height: 100%;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.mobile-tab-item.active {
+    color: var(--primary);
+}
+
+.mobile-tab-item svg {
+    transition: transform 0.2s ease;
+}
+
+.mobile-tab-item.active svg {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .mobile-bottom-nav {
+        display: flex;
+    }
+
+    .main-content {
+        padding-bottom: 75px !important;
+    }
+
+    .toast-notification {
+        bottom: 72px;
+    }
+
+    .action-buttons-wrap button, .btn-table-transcript, .btn-table-call, .btn-table-delete {
+        min-height: 34px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
 }

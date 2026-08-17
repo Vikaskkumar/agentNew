@@ -170,14 +170,21 @@ async function loadVoices() {
 }
 
 function renderVoiceSelector() {
-    if (!elements.voiceSelect) return;
-    elements.voiceSelect.innerHTML = state.voices.map(v => {
+    const optionsHtml = state.voices.map(v => {
         const isSelected = v.id === state.activeVoiceId ? "selected" : "";
         const lang = v.accent || v.language || "Indic";
         return `<option value="${escapeHtml(v.id)}" ${isSelected}>${escapeHtml(v.name)} (${escapeHtml(lang)})</option>`;
     }).join("");
 
-    elements.voiceSelect.value = state.activeVoiceId || "";
+    if (elements.voiceSelect) elements.voiceSelect.innerHTML = optionsHtml;
+    
+    const makeCallVoiceSelect = document.getElementById("makeCallVoiceSelect");
+    if (makeCallVoiceSelect) {
+        makeCallVoiceSelect.innerHTML = optionsHtml;
+        makeCallVoiceSelect.value = state.activeVoiceId || "";
+    }
+
+    if (elements.voiceSelect) elements.voiceSelect.value = state.activeVoiceId || "";
     updateActiveVoiceButtonState();
 }
 
@@ -232,7 +239,7 @@ function updateActiveVoiceButtonState() {
 }
 
 function switchView(viewName) {
-    document.querySelectorAll(".sidebar-nav-item").forEach(el => {
+    document.querySelectorAll(".sidebar-nav-item, .mobile-tab-item").forEach(el => {
         if (el.dataset.view === viewName) el.classList.add("active");
         else el.classList.remove("active");
     });
@@ -260,10 +267,29 @@ function switchView(viewName) {
 }
 
 function bindEvents() {
-    document.querySelectorAll(".sidebar-nav-item").forEach(item => {
+    const mobileNavToggle = document.getElementById("mobileNavToggle");
+    const sidebar = document.querySelector(".app-sidebar");
+
+    if (mobileNavToggle && sidebar) {
+        mobileNavToggle.addEventListener("click", (e) => {
+            e.stopPropagation();
+            sidebar.classList.toggle("active");
+        });
+
+        document.addEventListener("click", (e) => {
+            if (window.innerWidth <= 768 && sidebar.classList.contains("active") && !sidebar.contains(e.target) && e.target !== mobileNavToggle) {
+                sidebar.classList.remove("active");
+            }
+        });
+    }
+
+    document.querySelectorAll(".sidebar-nav-item, .mobile-tab-item").forEach(item => {
         item.addEventListener("click", () => {
             const view = item.dataset.view;
             if (view) switchView(view);
+            if (sidebar && window.innerWidth <= 768) {
+                sidebar.classList.remove("active");
+            }
         });
     });
 
@@ -296,6 +322,55 @@ function bindEvents() {
                 callCustomer(callBtn.dataset.id);
                 return;
             }
+        });
+    }
+
+    const makeCallsTbody = document.getElementById("makeCallsTableBody");
+    if (makeCallsTbody) {
+        makeCallsTbody.addEventListener("click", event => {
+            const deleteBtn = event.target.closest("[data-action='delete']");
+            if (deleteBtn) {
+                event.stopPropagation();
+                deleteCustomerRecord(deleteBtn.dataset.id);
+                return;
+            }
+            const inspectBtn = event.target.closest("[data-action='inspect']");
+            if (inspectBtn) {
+                event.stopPropagation();
+                openTranscriptModal(inspectBtn.dataset.id);
+                return;
+            }
+            const callBtn = event.target.closest("[data-action='call']");
+            if (callBtn) {
+                event.stopPropagation();
+                callCustomer(callBtn.dataset.id);
+                return;
+            }
+        });
+    }
+
+    const btnQuickVikas = document.getElementById("btnQuickVikas");
+    if (btnQuickVikas) {
+        btnQuickVikas.addEventListener("click", () => {
+            if (elements.name) elements.name.value = "Vikas Kumar";
+            if (elements.phone) elements.phone.value = "+919057262630";
+            showToast("Set contact to Vikas Kumar (+919057262630)");
+        });
+    }
+
+    const btnQuickDavid = document.getElementById("btnQuickDavid");
+    if (btnQuickDavid) {
+        btnQuickDavid.addEventListener("click", () => {
+            if (elements.name) elements.name.value = "David Miller";
+            if (elements.phone) elements.phone.value = "+19164356173";
+            showToast("Set contact to David Miller (+19164356173)");
+        });
+    }
+
+    const makeCallVoiceSelect = document.getElementById("makeCallVoiceSelect");
+    if (makeCallVoiceSelect) {
+        makeCallVoiceSelect.addEventListener("change", (e) => {
+            changeActiveVoice(e.target.value);
         });
     }
 
@@ -514,6 +589,7 @@ async function loadCustomers(isSilent = false) {
         const customers = await requestJson("/api/customers");
         state.customers = Array.isArray(customers) ? customers : [];
         renderCustomers();
+        renderMakeCallsFeed();
         renderPreviousContacts();
         updateKPIs();
         if (state.activeModalCustomerId) {
@@ -525,6 +601,55 @@ async function loadCustomers(isSilent = false) {
             showToast(error.message, true);
         }
     }
+}
+
+function renderMakeCallsFeed() {
+    const tbody = document.getElementById("makeCallsTableBody");
+    if (!tbody) return;
+
+    if (!state.customers.length) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--text-muted);">No recent call tasks found.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = state.customers.map((c, index) => {
+        const initials = (c.name || "Customer").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "CU";
+        const colorClass = AVATAR_COLORS[index % AVATAR_COLORS.length];
+        const isLive = c.status === "calling";
+        const statusPill = isLive 
+            ? `<span class="live-status-pill"><span class="live-dot-pulse"></span> LIVE CALL</span>` 
+            : c.status === "completed" 
+            ? `<span class="completed-status-pill">✅ COMPLETED</span>`
+            : `<span class="sentiment-badge-clean neutral">⏳ PENDING</span>`;
+
+        return `
+            <tr>
+                <td>
+                    <div class="customer-cell-clean">
+                        <div class="initials-avatar ${colorClass}">${escapeHtml(initials)}</div>
+                        <div class="customer-info-wrap">
+                            <span class="customer-name-bold">${escapeHtml(c.name || "Customer")}</span>
+                            <span class="customer-phone-subtext">${escapeHtml(c.phone || "")}</span>
+                        </div>
+                    </div>
+                </td>
+                <td>${statusPill}</td>
+                <td>
+                    <div class="action-buttons-wrap">
+                        <button class="btn-table-transcript" data-action="inspect" data-id="${c.id}" title="Inspect Live Transcript">
+                            ▶️ View
+                        </button>
+                        <button class="btn-table-call" data-action="call" data-id="${c.id}" title="Call Now">
+                            📞 Call
+                        </button>
+                        <button class="btn-table-delete" data-action="delete" data-id="${c.id}" title="Delete Record">
+                            🗑️
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join("");
 }
 
 function updateKPIs() {
