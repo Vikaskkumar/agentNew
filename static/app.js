@@ -269,26 +269,72 @@ function switchView(viewName) {
 function bindEvents() {
     const mobileNavToggle = document.getElementById("mobileNavToggle");
     const sidebar = document.querySelector(".app-sidebar");
+    const backdrop = document.getElementById("sidebarBackdrop");
+
+    function closeSidebar() {
+        if (sidebar) sidebar.classList.remove("active");
+        if (backdrop) backdrop.classList.remove("active");
+    }
+
+    function openSidebar() {
+        if (sidebar) sidebar.classList.add("active");
+        if (backdrop) backdrop.classList.add("active");
+    }
 
     if (mobileNavToggle && sidebar) {
         mobileNavToggle.addEventListener("click", (e) => {
             e.stopPropagation();
-            sidebar.classList.toggle("active");
+            if (sidebar.classList.contains("active")) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
         });
+
+        if (backdrop) {
+            backdrop.addEventListener("click", () => {
+                closeSidebar();
+            });
+        }
 
         document.addEventListener("click", (e) => {
             if (window.innerWidth <= 768 && sidebar.classList.contains("active") && !sidebar.contains(e.target) && e.target !== mobileNavToggle) {
-                sidebar.classList.remove("active");
+                closeSidebar();
             }
         });
+
+        // Touch Swipe Gesture to close sidebar on mobile
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        document.addEventListener("touchstart", (e) => {
+            if (e.touches && e.touches.length > 0) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+
+        document.addEventListener("touchend", (e) => {
+            if (sidebar.classList.contains("active") && e.changedTouches && e.changedTouches.length > 0) {
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+                const deltaX = touchEndX - touchStartX;
+                const deltaY = touchEndY - touchStartY;
+
+                // Swipe left gesture (horizontal movement > 50px & horizontal > vertical)
+                if (deltaX < -50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                    closeSidebar();
+                }
+            }
+        }, { passive: true });
     }
 
     document.querySelectorAll(".sidebar-nav-item, .mobile-tab-item").forEach(item => {
         item.addEventListener("click", () => {
             const view = item.dataset.view;
             if (view) switchView(view);
-            if (sidebar && window.innerWidth <= 768) {
-                sidebar.classList.remove("active");
+            if (window.innerWidth <= 768) {
+                closeSidebar();
             }
         });
     });
