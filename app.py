@@ -481,20 +481,20 @@ def get_initial_seed_data() -> List[Dict[str, Any]]:
     return [
         {
             "id": "c101",
-            "name": "Rohit Sharma",
-            "phone": "+919876543210",
+            "name": "Vikas Kumar",
+            "phone": "+919057262630",
             "status": "completed",
             "duration": "02:35",
-            "feedback": ["Very satisfied with the product quality and customer support."],
+            "feedback": ["The service was wonderful! Quick delivery and friendly staff."],
             "rating": 5,
             "sentiment": "Positive",
             "transcript": [
-                {"speaker": "ai", "text": "Hello Rohit! Calling from VoiceFeedback AI. How was your experience?"},
-                {"speaker": "customer", "text": "Very satisfied with the product quality and customer support."},
-                {"speaker": "ai", "text": "Wonderful! Thank you so much for your 5 star rating."}
+                {"speaker": "ai", "text": "राम राम सा! मैं बीसीटी फ़ाइबरनेट से बोल रहा हूँ। आपकी इंटरनेट सेवा कैसी चल रही है? थोड़ा फीडबैक दीजिए।"},
+                {"speaker": "customer", "text": "अच्छी चल रही है।"},
+                {"speaker": "ai", "text": "अच्छा, ये सुनकर अच्छा लगा। 5 स्टार देने के लिए धन्यवाद।"}
             ],
             "created_at": "Aug 17, 2025 10:24 AM",
-            "last_call": "2 days ago"
+            "last_call": "Today"
         },
         {
             "id": "c102",

@@ -1,28 +1,27 @@
 [
   {
     "id": "c101",
-    "name": "Sarah Jenkins",
+    "name": "Vikas Kumar",
     "phone": "+919057262630",
     "status": "completed",
     "feedback": [
       "The service was wonderful! Quick delivery and friendly staff.",
-      "I would rate it 5 stars.",
-      "\u0905\u091a\u094d\u091b\u0940 \u091a\u0932 \u0930\u0939\u0940 \u0939\u0948\u0964"
+      "I would rate it 5 stars."
     ],
     "rating": 5,
-    "sentiment": "Neutral",
+    "sentiment": "Positive",
     "transcript": [
       {
         "speaker": "ai",
-        "text": "\u0930\u093e\u092e \u0930\u093e\u092e \u0938\u093e! \u092e\u0948\u0902 \u092c\u0940\u0938\u0940\u091f\u0940 \u092b\u093c\u093e\u0907\u092c\u0930\u0928\u0947\u091f \u0938\u0947 \u092c\u094b\u0932 \u0930\u0939\u093e \u0939\u0942\u0901\u0964 \u0906\u092a\u0915\u0940 \u0907\u0902\u091f\u0930\u0928\u0947\u091f \u0938\u0947\u0935\u093e \u0915\u0948\u0938\u0940 \u091a\u0932 \u0930\u0939\u0940 \u0939\u0948? \u0925\u094b\u0921\u093c\u093e \u092b\u0940\u0921\u092c\u0948\u0915 \u0926\u0940\u091c\u093f\u090f\u0964"
+        "text": "राम राम सा! मैं बीसीटी फ़ाइबरनेट से बोल रहा हूँ। आपकी इंटरनेट सेवा कैसी चल रही है? थोड़ा फीडबैक दीजिए।"
       },
       {
         "speaker": "customer",
-        "text": "\u0905\u091a\u094d\u091b\u0940 \u091a\u0932 \u0930\u0939\u0940 \u0939\u0948\u0964"
+        "text": "अच्छी चल रही है।"
       },
       {
         "speaker": "ai",
-        "text": "\u0905\u091a\u094d\u091b\u093e, \u092f\u0947 \u0938\u0941\u0928\u0915\u0930 \u0905\u091a\u094d\u091b\u093e \u0932\u0917\u093e\u0964 5 \u0938\u094d\u091f\u093e\u0930 \u0926\u0947\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0927\u0928\u094d\u092f\u0935\u093e\u0926\u0964"
+        "text": "अच्छा, ये सुनकर अच्छा लगा। 5 स्टार देने के लिए धन्यवाद।"
       }
     ],
     "created_at": "2026-08-17 17:34",
