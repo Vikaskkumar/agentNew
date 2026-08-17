@@ -349,9 +349,9 @@ function bindEvents() {
         }, { passive: true });
     }
 
-    document.querySelectorAll(".sidebar-nav-item, .mobile-tab-item").forEach(item => {
+    document.querySelectorAll(".sidebar-nav-item, .mobile-tab-item, .sidebar-brand-header").forEach(item => {
         item.addEventListener("click", () => {
-            const view = item.dataset.view;
+            const view = item.dataset.view || "dashboard";
             if (view) switchView(view);
             if (window.innerWidth <= 768) {
                 closeSidebar();
@@ -677,6 +677,10 @@ async function loadCustomers(isSilent = false) {
         renderMakeCallsFeed();
         renderPreviousContacts();
         updateKPIs();
+        const fbView = document.getElementById("feedbacksView");
+        if (fbView && !fbView.classList.contains("hidden")) {
+            renderDetailedFeedbacks();
+        }
         if (state.activeModalCustomerId) {
             updateModalTranscript(state.activeModalCustomerId);
         }
@@ -884,7 +888,7 @@ function renderDetailedFeedbacks() {
             return `
                 <div class="chat-bubble ${isAI ? "ai" : "customer"}" style="margin-bottom: 6px;">
                     <span class="chat-speaker">${escapeHtml(label)}</span>
-                    <div>${escapeHtml(msg.text)}</div>
+                    <div>${escapeHtml(m.text || "")}</div>
                 </div>
             `;
         }).join("") : `<div class="text-muted" style="font-size: 0.8rem;">No transcript conversation recorded yet.</div>`;
