@@ -278,6 +278,12 @@ function bindEvents() {
     const fbContainer = document.getElementById("detailedFeedbacksContainer");
     if (fbContainer) {
         fbContainer.addEventListener("click", event => {
+            const deleteBtn = event.target.closest("[data-action='delete']");
+            if (deleteBtn) {
+                event.stopPropagation();
+                deleteCustomerRecord(deleteBtn.dataset.id);
+                return;
+            }
             const inspectBtn = event.target.closest("[data-action='inspect']");
             if (inspectBtn) {
                 event.stopPropagation();
@@ -287,7 +293,7 @@ function bindEvents() {
             const callBtn = event.target.closest("[data-action='call']");
             if (callBtn) {
                 event.stopPropagation();
-                initiateOutboundCall(callBtn.dataset.id);
+                callCustomer(callBtn.dataset.id);
                 return;
             }
         });
@@ -454,6 +460,13 @@ function bindEvents() {
     // Table action listener
     if (elements.table) {
         elements.table.addEventListener("click", event => {
+            const deleteBtn = event.target.closest("[data-action='delete']");
+            if (deleteBtn) {
+                event.stopPropagation();
+                deleteCustomerRecord(deleteBtn.dataset.id);
+                return;
+            }
+
             const inspectBtn = event.target.closest("[data-action='inspect']");
             if (inspectBtn) {
                 event.stopPropagation();
@@ -473,6 +486,26 @@ function bindEvents() {
                 openTranscriptModal(row.dataset.customerId);
             }
         });
+    }
+}
+
+async function deleteCustomerRecord(id) {
+    const c = state.customers.find(item => String(item.id) === String(id));
+    const name = c ? c.name : "this record";
+    if (!confirm(`Are you sure you want to delete ${name}?`)) return;
+
+    try {
+        const res = await requestJson(`/api/customers/${id}`, { method: "DELETE" });
+        if (res && res.success) {
+            showToast(`Deleted ${name}`);
+            await loadCustomers(false);
+            const fbView = document.getElementById("feedbacksView");
+            if (fbView && !fbView.classList.contains("hidden")) {
+                renderDetailedFeedbacks();
+            }
+        }
+    } catch (err) {
+        showToast(`Delete failed: ${err.message}`, true);
     }
 }
 
@@ -566,6 +599,9 @@ function renderCustomers() {
                         <button class="btn-table-call" data-action="call" data-id="${c.id}" title="Call Customer Now">
                             📞 Call
                         </button>
+                        <button class="btn-table-delete" data-action="delete" data-id="${c.id}" title="Delete Record">
+                            🗑️
+                        </button>
                     </div>
                 </td>
             </tr>
@@ -638,7 +674,7 @@ function renderDetailedFeedbacks() {
             return `
                 <div class="chat-bubble ${isAI ? "ai" : "customer"}" style="margin-bottom: 6px;">
                     <span class="chat-speaker">${escapeHtml(label)}</span>
-                    <div>${escapeHtml(m.text)}</div>
+                    <div>${escapeHtml(msg.text)}</div>
                 </div>
             `;
         }).join("") : `<div class="text-muted" style="font-size: 0.8rem;">No transcript conversation recorded yet.</div>`;
@@ -679,6 +715,9 @@ function renderDetailedFeedbacks() {
                     </button>
                     <button class="btn-table-call" data-action="call" data-id="${c.id}">
                         📞 Re-Call Customer
+                    </button>
+                    <button class="btn-table-delete" data-action="delete" data-id="${c.id}">
+                        🗑️ Delete Record
                     </button>
                 </div>
             </div>

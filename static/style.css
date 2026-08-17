@@ -972,6 +972,30 @@ button, input, select, textarea {
     white-space: nowrap;
 }
 
+.btn-table-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 10px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    background-color: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-table-delete:hover {
+    background-color: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+}
+
 /* Detailed Feedbacks View Page Styles */
 .feedbacks-header-card {
     padding: 14px 20px;
