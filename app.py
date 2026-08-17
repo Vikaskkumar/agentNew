@@ -40,25 +40,15 @@ def add_security_headers(response):
     return response
 
 
+
+
+
 # =========================
 # VOICE CATALOG & CONFIG
 # =========================
+
 VOICE_CATALOG: List[Dict[str, str]] = [
-    # Female Voices
-    {
-        "id": "Google.en-US-Chirp3-HD-Aoede",
-        "name": "Sarah (Chirp3 Ultra-HD Female - US)",
-        "accent": "US English",
-        "gender": "Female",
-        "sample_text": "Hello! I am Sarah, your AI Voice Assistant. How can I help you today?",
-    },
-    {
-        "id": "Google.en-US-Journey-F",
-        "name": "Emma (Journey Neural Female - US)",
-        "accent": "US English",
-        "gender": "Female",
-        "sample_text": "Hi there! I am Emma. I use hyper-realistic natural speech inflections and conversational dynamics.",
-    },
+    # English Voices
     {
         "id": "Google.en-IN-Wavenet-D",
         "name": "Priya (Wavenet Neural Female - India)",
@@ -67,54 +57,34 @@ VOICE_CATALOG: List[Dict[str, str]] = [
         "sample_text": "Namaste! I am Priya. I deliver warm, polite, and respectful customer feedback calls.",
     },
     {
-        "id": "Google.en-GB-Studio-B",
-        "name": "Victoria (Studio Premium Female - UK British)",
-        "accent": "British English",
-        "gender": "Female",
-        "sample_text": "Good day! I am Victoria. I provide a sophisticated and professional British voice experience.",
-    },
-    {
-        "id": "Google.en-US-Chirp3-HD-Kore",
-        "name": "Chloe (Chirp3 Ultra-HD Female - Soft & Friendly)",
-        "accent": "US English",
-        "gender": "Female",
-        "sample_text": "Hello! I am Chloe. I offer a gentle, friendly, and reassuring conversational tone.",
-    },
-    # Male Voices
-    {
-        "id": "Google.en-US-Chirp3-HD-Fenrir",
-        "name": "Alex (Chirp3 Ultra-HD Male - US)",
-        "accent": "US English",
-        "gender": "Male",
-        "sample_text": "Hello! This is Alex. I am ready to handle your outbound customer feedback operations.",
-    },
-    {
-        "id": "Google.en-US-Journey-D",
-        "name": "Marcus (Journey Deep Male - US)",
-        "accent": "US English",
-        "gender": "Male",
-        "sample_text": "Greetings! I am Marcus, your AI customer operations specialist with a deep, authoritative voice.",
-    },
-    {
         "id": "Google.en-IN-Wavenet-B",
         "name": "Rohan (Wavenet Neural Male - India)",
         "accent": "Indian English",
         "gender": "Male",
         "sample_text": "Hello! I am Rohan. I bring a clear, polite, and professional Indian male voice persona.",
     },
+    
+    # Marwari + Rajasthani + Hindi Voice Models (Twilio & Web Supported)
     {
-        "id": "Google.en-GB-Studio-C",
-        "name": "Oliver (Studio Premium Male - UK British)",
-        "accent": "British English",
+        "id": "Google.hi-IN-Wavenet-B",
+        "name": "Ratan Singh (Neural Male - Marwari, Rajasthani & Hindi)",
+        "accent": "Rajasthani & Marwari Hindi",
         "gender": "Male",
-        "sample_text": "Hello there! I am Oliver, offering a crisp, refined British male voice for your survey calls.",
+        "sample_text": "राम राम सा! खम्मा घणी। मैं रतन सिंह, बीसीटी फ़ाइबरनेट से बात कर रहा हूँ।",
     },
     {
-        "id": "Google.en-US-Chirp3-HD-Puck",
-        "name": "Ethan (Chirp3 Ultra-HD Male - Dynamic)",
-        "accent": "US English",
-        "gender": "Male",
-        "sample_text": "Hey there! I am Ethan, your energetic and engaging voice AI assistant.",
+        "id": "Google.hi-IN-Wavenet-A",
+        "name": "Gauri (Neural Female - Marwari, Rajasthani & Hindi)",
+        "accent": "Rajasthani & Marwari Hindi",
+        "gender": "Female",
+        "sample_text": "खम्मा घणी! राम राम सा। मैं गौरी हूँ, बीसीटी फ़ाइबरनेट सेवा फ़ीडबैक के लिए कॉलिंग।",
+    },
+    {
+        "id": "Polly.Aditi",
+        "name": "Aditi / Sarvam (Indic Voice - Marwari + Rajasthani)",
+        "accent": "Marwari + Rajasthani Dialect",
+        "gender": "Female",
+        "sample_text": "राम राम सा! खम्मा घणी हुकूम, बीसीटी फ़ाइबरनेट इंटरनेट सेवा री जानकारी दीजो।",
     },
 ]
 
@@ -145,16 +115,16 @@ def get_active_agent_name() -> str:
 # =========================
 # DYNAMIC TUNNEL MANAGEMENT
 # =========================
+
+
 active_tunnel_url = ""
 
 
-def is_public_host(host: str) -> bool:
-    """Checks if a hostname/host string is a public address and not local/LAN."""
-    if not host:
+def is_public_host(url: str) -> bool:
+    """Returns True if URL is a valid public domain (excluding localhost, private IPs, and broken tunnel landing hosts)."""
+    if not url:
         return False
-    clean = host.strip().lower()
-    if clean.startswith("http://") or clean.startswith("https://"):
-        clean = urllib.parse.urlparse(clean).netloc
+    clean = url.replace("http://", "").replace("https://", "").strip()
     clean_host = clean.split(":")[0]
     if clean_host in ("localhost", "127.0.0.1", "0.0.0.0", "::1") or clean_host.endswith(".local"):
         return False
@@ -164,11 +134,60 @@ def is_public_host(host: str) -> bool:
         parts = clean_host.split(".")
         if len(parts) >= 2 and parts[1].isdigit() and 16 <= int(parts[1]) <= 31:
             return False
+    if any(b in clean_host for b in ["loca.lt", "lhr.life", "serveo.net"]):
+        return False
     return True
 
 
+def get_twilio_voice(voice_id: str) -> str:
+    """Safely maps voice identifier string to a valid Twilio <Say voice="..."> attribute value."""
+    if not voice_id:
+        return "Google.hi-IN-Wavenet-B"
+        
+    valid_twilio_voices = {
+        "Google.hi-IN-Wavenet-A",
+        "Google.hi-IN-Wavenet-B",
+        "Google.hi-IN-Wavenet-C",
+        "Google.hi-IN-Wavenet-D",
+        "Google.en-IN-Wavenet-A",
+        "Google.en-IN-Wavenet-B",
+        "Google.en-IN-Wavenet-C",
+        "Google.en-IN-Wavenet-D",
+        "Polly.Aditi",
+        "Polly.Kajal",
+        "alice",
+        "man",
+        "woman"
+    }
+    if voice_id in valid_twilio_voices:
+        return voice_id
+
+    # Fallback mapping for custom voice strings to guaranteed valid Twilio voices
+    if "Neural2-A" in voice_id or "Male" in voice_id:
+        return "Google.hi-IN-Wavenet-B"
+    if "Neural2-D" in voice_id or "Female" in voice_id or "Bulbul" in voice_id or "Sarvam" in voice_id:
+        return "Google.hi-IN-Wavenet-A"
+    if "hi-IN" in voice_id:
+        return "Google.hi-IN-Wavenet-B"
+
+    return "Google.hi-IN-Wavenet-B"
+
+
 def get_base_url() -> str:
-    """Returns live public HTTPS URL from cloud env, active tunnel, BASE_URL, or request host."""
+    """Returns live public HTTPS URL from request headers, cloud env, active tunnel, or BASE_URL."""
+    global active_tunnel_url
+    try:
+        if request and request.host:
+            req_proto = request.headers.get("X-Forwarded-Proto", "https")
+            req_host = request.headers.get("X-Forwarded-Host") or request.host
+            req_host = req_host.rstrip("/")
+            if is_public_host(req_host):
+                live_url = f"{req_proto}://{req_host}" if not req_host.startswith("http") else req_host
+                active_tunnel_url = live_url
+                return live_url
+    except Exception:
+        pass
+
     r_host = os.getenv("RENDER_EXTERNAL_HOSTNAME")
     if r_host:
         r_host = r_host.rstrip("/")
@@ -179,64 +198,29 @@ def get_base_url() -> str:
         v_url = v_url.rstrip("/")
         return f"https://{v_url}" if not v_url.startswith("http") else v_url
 
-    if active_tunnel_url:
-        return active_tunnel_url
+    if active_tunnel_url and is_public_host(active_tunnel_url):
+        return active_tunnel_url.rstrip("/")
+
+    # Check active tunnel or launch verified tunnel synchronously if missing
+    tunnel = ensure_tunnel()
+    if tunnel and is_public_host(tunnel):
+        return tunnel.rstrip("/")
 
     base_env = os.getenv("BASE_URL", "").strip().rstrip("/")
     if base_env and is_public_host(base_env):
         return base_env
 
-    try:
-        if request and request.host:
-            host = request.host.rstrip("/")
-            if is_public_host(host):
-                return host if host.startswith("http") else f"https://{host}"
-    except Exception:
-        pass
-
-    if base_env:
-        return base_env
-
-    try:
-        if request and request.host:
-            return f"http://{request.host.rstrip('/')}"
-    except Exception:
-        pass
-
     return "http://127.0.0.1:5000"
 
 
 def update_env_base_url(live_url: str) -> None:
-    """Auto-updates BASE_URL key in local .env file and environment."""
+    """Auto-updates BASE_URL key in environment without triggering file reloader loops."""
     if not live_url:
         return
+    global active_tunnel_url
+    active_tunnel_url = live_url
     os.environ["BASE_URL"] = live_url
-    if IS_CLOUD_PROD:
-        return
-    env_path = os.path.join(os.path.dirname(__file__), ".env")
-    if not os.path.exists(env_path):
-        return
-    try:
-        with open(env_path, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-
-        updated = False
-        new_lines = []
-        for line in lines:
-            if line.strip().startswith("BASE_URL="):
-                new_lines.append(f"BASE_URL={live_url}\n")
-                updated = True
-            else:
-                new_lines.append(line)
-
-        if not updated:
-            new_lines.append(f"\nBASE_URL={live_url}\n")
-
-        with open(env_path, "w", encoding="utf-8") as f:
-            f.writelines(new_lines)
-        print(f"[Auto-Env] .env updated with BASE_URL={live_url}")
-    except Exception as e:
-        print(f"[Auto-Env Warning] {e}")
+    print(f"[Auto-Env] Dynamic BASE_URL set in memory to {live_url}")
 
 
 def kill_zombie_cloudflared() -> None:
@@ -263,87 +247,38 @@ def _drain_process_stdout(proc: subprocess.Popen) -> None:
         pass
 
 
-def start_ssh_tunnel() -> Optional[str]:
-    """Tries SSH-based tunnel providers (serveo.net -> localhost.run)."""
-    global active_tunnel_url
-    if IS_CLOUD_PROD:
-        return None
 
+
+
+import ssl
+
+def verify_tunnel_url(url: str) -> bool:
+    """Verifies that a public tunnel URL actually routes HTTP requests to Flask app."""
+    if not url or not is_public_host(url):
+        return False
+    clean_url = url.rstrip("/") + "/api/health"
     try:
-        subprocess.run(["ssh", "-V"], capture_output=True, text=True, timeout=5, check=True)
-    except Exception:
-        return None
-
-    providers = [
-        {
-            "name": "localhost.run",
-            "cmd": [
-                "ssh",
-                "-o",
-                "StrictHostKeyChecking=no",
-                "-o",
-                "ServerAliveInterval=30",
-                "-o",
-                "ConnectTimeout=15",
-                "-R",
-                "80:127.0.0.1:5000",
-                "nokey@localhost.run",
-            ],
-            "pattern": r"https://[a-zA-Z0-9.-]+\.lhr\.life",
-            "keyword": "lhr.life",
-        },
-        {
-            "name": "serveo.net",
-            "cmd": [
-                "ssh",
-                "-o",
-                "StrictHostKeyChecking=no",
-                "-o",
-                "ServerAliveInterval=30",
-                "-o",
-                "ConnectTimeout=15",
-                "-R",
-                "80:127.0.0.1:5000",
-                "serveo.net",
-            ],
-            "pattern": r"https://[a-zA-Z0-9.-]+\.serveo\.net",
-            "keyword": "serveo.net",
-        },
-    ]
-
-    for provider in providers:
-        try:
-            proc = subprocess.Popen(
-                provider["cmd"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
-            )
-            start_t = time.time()
-            found_url = None
-            while time.time() - start_t < 20:
-                line = proc.stdout.readline()
-                if not line:
-                    break
-                if provider["keyword"] in line:
-                    match = re.search(provider["pattern"], line)
-                    if match:
-                        found_url = match.group(0)
-                        active_tunnel_url = found_url
-                        print(f"[{provider['name'].upper()} TUNNEL SUCCESS] {found_url}")
-                        update_env_base_url(found_url)
-                        threading.Thread(target=_drain_process_stdout, args=(proc,), daemon=True).start()
-                        return found_url
-            if not found_url:
-                try:
-                    proc.kill()
-                except Exception:
-                    pass
-        except Exception as err:
-            print(f"[Auto-Tunnel {provider['name']} Error] {err}")
-
-    return None
+        req = urllib.request.Request(
+            clean_url,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                "ngrok-skip-browser-warning": "true",
+                "Bypass-Tunnel-Remainder": "true",
+            },
+        )
+        ctx = ssl._create_unverified_context()
+        with urllib.request.urlopen(req, timeout=3, context=ctx) as resp:
+            if resp.status == 200:
+                body = resp.read().decode("utf-8")
+                if '"status": "ok"' in body or '"status":"ok"' in body:
+                    return True
+    except Exception as ex:
+        print(f"[Tunnel Verify Check for {url}] {ex}")
+    return False
 
 
 def start_local_cloudflare_tunnel() -> Optional[str]:
-    """Launches local Cloudflare Free Tunnel via cloudflared.exe."""
+    """Launches local Cloudflare Free Tunnel via cloudflared.exe with robust health verification."""
     global active_tunnel_url
     if IS_CLOUD_PROD:
         return None
@@ -379,81 +314,108 @@ def start_local_cloudflare_tunnel() -> Optional[str]:
                 match = re.search(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com", line)
                 if match:
                     found_url = match.group(0)
-                    active_tunnel_url = found_url
-                    print(f"[CLOUDFLARE TUNNEL SUCCESS] {found_url}")
-                    update_env_base_url(found_url)
+                    print(f"[Cloudflare Tunnel Found] {found_url}. Waiting for DNS & QUIC propagation...")
+                    
+                    # Drain process stdout in background to prevent buffer stall
                     threading.Thread(target=_drain_process_stdout, args=(proc,), daemon=True).start()
-                    return found_url
+
+                    # Wait up to 12 seconds for Cloudflare edge propagation
+                    verified = False
+                    for attempt in range(1, 13):
+                        time.sleep(1)
+                        if verify_tunnel_url(found_url):
+                            verified = True
+                            print(f"[CLOUDFLARE TUNNEL READY & VERIFIED ON ATTEMPT {attempt}] {found_url}")
+                            break
+
+                    if verified:
+                        active_tunnel_url = found_url
+                        update_env_base_url(found_url)
+                        return found_url
+                    else:
+                        print(f"[Cloudflare Tunnel Failed 12s Verification] {found_url}")
+                        try:
+                            proc.kill()
+                        except Exception:
+                            pass
+                        return None
     except Exception as err:
         print(f"[Auto-Tunnel Error] {err}")
 
     return None
 
 
-def start_localtunnel() -> Optional[str]:
-    """Launches localtunnel via npx as an instant reliable fallback."""
-    global active_tunnel_url
-    if IS_CLOUD_PROD:
-        return None
-
+def get_ngrok_tunnel_url() -> Optional[str]:
+    """Queries running ngrok local inspection endpoint (http://127.0.0.1:4040/api/tunnels)."""
     try:
-        proc = subprocess.Popen(
-            ["npx", "-y", "localtunnel", "--port", "5000"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            shell=True,
-            bufsize=1,
-        )
-        start_t = time.time()
-        found_url = None
-        while time.time() - start_t < 15:
-            line = proc.stdout.readline()
-            if not line:
-                break
-            if "loca.lt" in line:
-                match = re.search(r"https://[a-zA-Z0-9-]+\.loca\.lt", line)
-                if match:
-                    found_url = match.group(0)
-                    active_tunnel_url = found_url
-                    print(f"[LOCALTUNNEL SUCCESS] {found_url}")
-                    update_env_base_url(found_url)
-                    threading.Thread(target=_drain_process_stdout, args=(proc,), daemon=True).start()
-                    return found_url
-        if not found_url:
-            try:
-                proc.kill()
-            except Exception:
-                pass
-    except Exception as err:
-        print(f"[Localtunnel Error] {err}")
+        req = urllib.request.Request("http://127.0.0.1:4040/api/tunnels")
+        with urllib.request.urlopen(req, timeout=2) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            tunnels = data.get("tunnels", [])
+            for t in tunnels:
+                pub = t.get("public_url", "")
+                if pub and pub.startswith("https://") and "ngrok" in pub:
+                    return pub.rstrip("/")
+    except Exception:
+        pass
+    return None
 
+
+def start_local_ngrok_tunnel() -> Optional[str]:
+    """Launches ngrok HTTP tunnel fallback if cloudflared is rate-limited (429)."""
+    existing = get_ngrok_tunnel_url()
+    if existing:
+        update_env_base_url(existing)
+        return existing
+    try:
+        subprocess.Popen(
+            ["ngrok", "http", "5000", "--log=stdout"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        for _ in range(8):
+            time.sleep(1)
+            url = get_ngrok_tunnel_url()
+            if url:
+                update_env_base_url(url)
+                print(f"[NGROK FALLBACK TUNNEL READY] {url}")
+                return url
+    except Exception as e:
+        print(f"[Ngrok Auto-Tunnel Exception] {e}")
     return None
 
 
 def ensure_tunnel() -> str:
-    """Master auto-tunnel initializer: Cloudflare -> localtunnel -> SSH -> BASE_URL fallback."""
+    """Master auto-tunnel initializer: Cloudflare -> Ngrok -> BASE_URL fallback."""
     global active_tunnel_url
     if IS_CLOUD_PROD:
         return os.getenv("BASE_URL", "")
 
-    if active_tunnel_url:
+    if active_tunnel_url and is_public_host(active_tunnel_url):
         return active_tunnel_url
 
+    # Check if ngrok is already running
+    ngrok_url = get_ngrok_tunnel_url()
+    if ngrok_url:
+        active_tunnel_url = ngrok_url
+        update_env_base_url(ngrok_url)
+        return ngrok_url
+
+    # Try Cloudflare tunnel
     cf_url = start_local_cloudflare_tunnel()
     if cf_url:
         return cf_url
 
-    lt_url = start_localtunnel()
-    if lt_url:
-        return lt_url
-
-    ssh_url = start_ssh_tunnel()
-    if ssh_url:
-        return ssh_url
+    # Cloudflare was rate-limited or failed -> launch Ngrok tunnel automatically
+    ngrok_fallback = start_local_ngrok_tunnel()
+    if ngrok_fallback:
+        return ngrok_fallback
 
     fallback = os.getenv("BASE_URL", "").strip().rstrip("/")
-    active_tunnel_url = fallback
+    if fallback and is_public_host(fallback):
+        active_tunnel_url = fallback
+        return fallback
+
     return fallback
 
 
@@ -466,6 +428,9 @@ if not IS_CLOUD_PROD and (os.environ.get("WERKZEUG_RUN_MAIN") == "true" or os.en
 # =========================
 # DATA STORAGE & HELPERS
 # =========================
+
+
+
 def get_initial_seed_data() -> List[Dict[str, Any]]:
     """Returns initial seed customer records."""
     return [
@@ -578,19 +543,38 @@ def generate_ai_response(customer_text: str, customer: Optional[Dict[str, Any]] 
     """Generates conversational AI response via Gemini API with smart fallback."""
     ai_text = ""
     lower = customer_text.lower()
-    agent_name = get_active_agent_name()
+    active_v = get_active_voice()
+    agent_info = get_active_agent_info()
+    agent_name = agent_info["agent_name"]
+    is_rajasthani_hindi = any(k in active_v for k in ["hi-IN", "Neural2", "Sarvam", "Bulbul"]) or "Hindi" in agent_info.get("info", {}).get("accent", "")
 
     if gemini:
         try:
-            prompt = (
-                f"You are {agent_name} calling from BCT Fibernet regarding internet service feedback.\n"
-                f'The customer said: "{customer_text}"\n\n'
-                "Rules:\n"
-                "1. Acknowledge their feedback about BCT Fibernet internet service naturally.\n"
-                "2. If they haven't given a 1 to 5 star rating yet, ask for a star rating out of 5.\n"
-                "3. Keep your reply super concise (maximum 15 words).\n"
-                "4. Speak naturally without markdown or internal labels."
-            )
+            if is_rajasthani_hindi:
+                prompt = (
+                    f"You are {agent_name} calling from BCT Fibernet for customer feedback.\n"
+                    f'The customer said: "{customer_text}"\n\n'
+                    "EXACT DIALOGUE SCRIPT & STYLE RULES:\n"
+                    "1. Respond in respectful Hindi/Rajasthani tone starting with 'राम राम सा!' when appropriate.\n"
+                    "2. If customer says service is good/fine: say 'अच्छा, ये सुनकर अच्छा लगा। इंटरनेट की स्पीड भी ठीक मिल रही है?' or ask for 1 to 5 star rating.\n"
+                    "3. If customer has issues/problems: say 'अच्छा, समझ गया। आपको किस तरह की परेशानी आ रही है? थोड़ा बताइए।' or 'ठीक है, आपकी बात नोट कर लेते हैं।'\n"
+                    "4. Useful follow-up questions to use when appropriate:\n"
+                    "   - 'इंटरनेट की स्पीड ठीक चल रही है?'\n"
+                    "   - 'कनेक्शन में कोई परेशानी तो नहीं आ रही?'\n"
+                    "   - 'इंटरनेट बार-बार बंद तो नहीं हो रहा?'\n"
+                    "5. Keep replies super concise (maximum 15 words).\n"
+                    "6. Output ONLY plain text without markdown, quotes, or internal labels."
+                )
+            else:
+                prompt = (
+                    f"You are {agent_name} calling from BCT Fibernet regarding internet service feedback.\n"
+                    f'The customer said: "{customer_text}"\n\n'
+                    "Rules:\n"
+                    "1. Acknowledge their feedback about BCT Fibernet internet service naturally.\n"
+                    "2. If they haven't given a 1 to 5 star rating yet, ask for a star rating out of 5.\n"
+                    "3. Keep your reply super concise (maximum 15 words).\n"
+                    "4. Speak naturally without markdown or internal labels."
+                )
             res = gemini.models.generate_content(model=GEMINI_MODEL, contents=prompt)
             if res and res.text:
                 ai_text = res.text.strip()
@@ -600,21 +584,21 @@ def generate_ai_response(customer_text: str, customer: Optional[Dict[str, Any]] 
     if not ai_text:
         nums = re.findall(r"\b([1-5])\b", customer_text)
         rating_num = int(nums[0]) if nums else (customer.get("rating") if customer else None)
-        bye_words = ["bye", "goodbye", "thank you", "thanks", "that's all", "done", "no", "that is all"]
+        bye_words = ["bye", "goodbye", "thank you", "thanks", "that's all", "done", "no", "that is all", "राम राम", "धन्यवाद", "कोनी"]
 
         if any(w in lower for w in bye_words):
-            ai_text = "Thank you so much for your valuable feedback! Have a wonderful day. Goodbye!"
+            ai_text = "राम राम! आपका दिन अच्छा रहे। बीसीटी फ़ाइबरनेट को समय देने के लिए धन्यवाद।" if is_rajasthani_hindi else "Thank you so much for your valuable feedback! Have a wonderful day. Goodbye!"
         elif rating_num:
             if rating_num >= 4:
-                ai_text = f"Thank you so much for giving us {rating_num} stars! We are delighted to hear your feedback."
+                ai_text = f"अच्छा, ये सुनकर अच्छा लगा। {rating_num} स्टार देने के लिए धन्यवाद।" if is_rajasthani_hindi else f"Thank you so much for giving us {rating_num} stars! We are delighted to hear your feedback."
             else:
-                ai_text = f"Thank you for your {rating_num} star rating. We sincerely apologize for any inconvenience and will work to improve."
-        elif any(w in lower for w in ["good", "great", "excellent", "awesome", "amazing", "wonderful", "nice", "happy"]):
-            ai_text = "That is so wonderful to hear! How many stars out of 5 would you give our service?"
-        elif any(w in lower for w in ["bad", "poor", "slow", "worst", "terrible", "issue", "delay", "not good"]):
-            ai_text = "We are truly sorry to hear that. How many stars out of 5 would you rate your overall experience?"
+                ai_text = f"ठीक है, आपकी बात नोट कर लेते हैं। {rating_num} स्टार रेटिंग के लिए धन्यवाद।" if is_rajasthani_hindi else f"Thank you for your {rating_num} star rating. We sincerely apologize for any inconvenience and will work to improve."
+        elif any(w in lower for w in ["good", "great", "excellent", "awesome", "amazing", "wonderful", "nice", "happy", "बढ़िया", "सही", "चोखो", "ठीक", "अच्छा", "अच्छी"]):
+            ai_text = "बहुत बढ़िया! आपकी प्रतिक्रिया के लिए धन्यवाद।" if is_rajasthani_hindi else "That is so wonderful to hear! Thank you for your feedback."
+        elif any(w in lower for w in ["bad", "poor", "slow", "worst", "terrible", "issue", "delay", "not good", "खराब", "धीमी", "बंद"]):
+            ai_text = "आपकी परेशानी हमने नोट कर ली है। हमारी टीम जल्द सुधार करेगी।" if is_rajasthani_hindi else "We have noted your concern and will work to improve our service immediately."
         else:
-            ai_text = "Thank you for sharing that with us! How would you rate your overall experience from 1 to 5 stars?"
+            ai_text = "आपकी प्रतिक्रिया के लिए बीसीटी फ़ाइबरनेट की ओर से बहुत-बहुत धन्यवाद!" if is_rajasthani_hindi else "Thank you for sharing your valuable feedback with BCT Fibernet!"
 
     return ai_text
 
@@ -622,6 +606,9 @@ def generate_ai_response(customer_text: str, customer: Optional[Dict[str, Any]] 
 # =========================
 # WEB ROUTES & ENDPOINTS
 # =========================
+
+
+
 @app.route("/")
 def index():
     """Serves main dashboard SPA."""
@@ -666,7 +653,9 @@ def stream_voice_demo():
     voice_id = request.args.get("voice_id") or get_active_voice()
     v_info = next((v for v in VOICE_CATALOG if v["id"] == voice_id), VOICE_CATALOG[0])
     text = v_info.get("sample_text", "Hello! I am your AI Voice Assistant.")
-    lang = "hi" if "IN" in voice_id and "Priya" in v_info["name"] else ("en-uk" if "GB" in voice_id else "en")
+    
+    is_hindi_rajasthani = ("hi-IN" in voice_id) or ("Sarvam" in voice_id) or ("Hindi" in v_info.get("accent", "")) or ("Rajasthani" in v_info.get("accent", "")) or ("Marwari" in v_info.get("accent", ""))
+    lang = "hi" if is_hindi_rajasthani else ("en-uk" if "GB" in voice_id else "en")
 
     tts_url = f"https://translate.google.com/translate_tts?ie=UTF-8&tl={lang}&client=tw-ob&q={urllib.parse.quote(text)}"
     try:
@@ -803,6 +792,9 @@ def reset_seed_data():
 # =========================
 # CALL CONTROL & TWILIO API
 # =========================
+
+
+
 @app.route("/api/call", methods=["POST"])
 def make_call():
     """Triggers outbound AI voice feedback call."""
@@ -823,6 +815,12 @@ def make_call():
         customer["phone"] = target_phone
 
     base = get_base_url()
+    if not is_public_host(base):
+        return jsonify({
+            "success": False,
+            "error": "No active public HTTPS tunnel connected. Cloudflare quick tunnel is currently rate-limited (429). Please set a valid public BASE_URL in .env (e.g. ngrok http 5000) or wait for Cloudflare cooldown."
+        }), 400
+
     cid_param = f"?customer_id={customer['id']}" if customer else f"?phone={urllib.parse.quote(target_phone)}"
     voice_url = f"{base}/api/twilio/voice{cid_param}"
     status_url = f"{base}/api/twilio/status{cid_param}"
@@ -867,6 +865,14 @@ def make_call():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+def is_marwari_accent_active() -> bool:
+    """Checks if the currently active voice is a Marwari / Rajasthani / Hindi accent voice."""
+    v = get_active_voice()
+    info = get_active_agent_info()
+    accent = info.get("info", {}).get("accent", "")
+    return any(k in v for k in ["hi-IN", "Neural2", "Sarvam", "Bulbul", "Aditi", "Kajal"]) or "Rajasthani" in accent or "Marwari" in accent or "Hindi" in accent
+
+
 @app.route("/api/twilio/voice", methods=["POST", "GET"])
 def twilio_voice():
     """Initial TwiML entry point when call connects."""
@@ -885,13 +891,19 @@ def twilio_voice():
     response = VoiceResponse()
     agent_name = get_active_agent_name()
     c_name = customer["name"] if customer else ""
-    greeting_text = (
-        f"Hello {c_name}! I am {agent_name} from BCT Fibernet, calling for quick feedback on your internet service. "
-        "How is your experience?"
-    )
+    v = get_twilio_voice(get_active_voice())
+    is_marwari = is_marwari_accent_active()
+    stt_lang = "hi-IN" if is_marwari else "en-IN"
 
-    v = get_active_voice()
-    response.say(greeting_text, voice=v)
+    if is_marwari:
+        greeting_text = "राम राम सा! मैं बीसीटी फ़ाइबरनेट से बोल रहा हूँ। आपकी इंटरनेट सेवा कैसी चल रही है? थोड़ा फीडबैक दीजिए।"
+        closing_text = "राम राम! आपका दिन अच्छा रहे। बीसीटी फ़ाइबरनेट को समय देने के लिए धन्यवाद।"
+    else:
+        greeting_text = (
+            f"Hello {c_name}! I am {agent_name} from BCT Fibernet, calling for quick feedback on your internet service. "
+            "How is your experience?"
+        )
+        closing_text = "Thank you for your feedback! Goodbye."
 
     if customer:
         customer["transcript"] = [{"speaker": "ai", "text": greeting_text}]
@@ -902,11 +914,11 @@ def twilio_voice():
         action=feedback_url,
         method="POST",
         speech_timeout="auto",
-        language="en-IN",
+        language=stt_lang,
     )
-    gather.say("How is your internet service experience?", voice=v)
+    gather.say(greeting_text, voice=v)
 
-    response.say("Thank you for your feedback! Goodbye.", voice=v)
+    response.say(closing_text, voice=v)
     response.hangup()
 
     return Response(str(response), status=200, content_type="text/xml")
@@ -924,18 +936,20 @@ def twilio_feedback():
     base = get_base_url()
     cid_param = f"?customer_id={customer['id']}" if customer else ""
     feedback_url = f"{base}/api/twilio/feedback{cid_param}"
-    v = get_active_voice()
+    v = get_twilio_voice(get_active_voice())
+    is_marwari = is_marwari_accent_active()
+    stt_lang = "hi-IN" if is_marwari else "en-IN"
 
     if not customer_text:
-        response.say("I didn't quite catch that. Could you please tell me about your experience?", voice=v)
+        no_speech_text = "जी, आपकी आवाज़ थोड़ी साफ़ नहीं आ रही है। एक बार फिर से बताइए।" if is_marwari else "I didn't quite catch that. Could you please tell me about your experience?"
         gather = response.gather(
             input="speech",
             action=feedback_url,
             method="POST",
             speech_timeout="auto",
-            language="en-IN",
+            language=stt_lang,
         )
-        gather.say("I am listening.", voice=v)
+        gather.say(no_speech_text, voice=v)
         return Response(str(response), status=200, content_type="text/xml")
 
     if customer:
@@ -947,8 +961,8 @@ def twilio_feedback():
             if nums:
                 customer["rating"] = int(nums[0])
 
-        pos_words = ["good", "great", "excellent", "amazing", "wonderful", "awesome", "fast", "love", "nice", "5", "4"]
-        neg_words = ["bad", "poor", "terrible", "horrible", "slow", "delay", "worst", "hate", "1", "2"]
+        pos_words = ["good", "great", "excellent", "amazing", "wonderful", "awesome", "fast", "love", "nice", "5", "4", "बढ़िया", "सही", "चोखो", "बढिया", "ठीक"]
+        neg_words = ["bad", "poor", "terrible", "horrible", "slow", "delay", "worst", "hate", "1", "2", "खराब", "धीमी", "बेकार", "परेशानी", "बंद"]
         lower = customer_text.lower()
         if any(w in lower for w in pos_words):
             customer["sentiment"] = "Positive"
@@ -961,29 +975,15 @@ def twilio_feedback():
     if customer:
         customer.setdefault("transcript", []).append({"speaker": "ai", "text": ai_text})
 
-    bye_keywords = ["bye", "goodbye", "thank you", "thanks", "that's all", "done", "no", "that is all"]
-    is_closing = any(w in customer_text.lower() for w in bye_keywords)
+    bye_msg = "राम राम! आपका दिन अच्छा रहे। बीसीटी फ़ाइबरनेट को समय देने के लिए धन्यवाद।" if is_marwari else "Have a fantastic day! Goodbye."
 
+    # Always deliver response, polite closing, and HANG UP cleanly after feedback
     response.say(ai_text, voice=v)
-
-    if is_closing or (customer and customer.get("rating") is not None and len(customer.get("feedback", [])) >= 2):
-        response.say("Have a fantastic day! Goodbye.", voice=v)
-        response.hangup()
-        if customer:
-            customer["status"] = "completed"
-    else:
-        gather = response.gather(
-            input="speech",
-            action=feedback_url,
-            method="POST",
-            speech_timeout="auto",
-            language="en-IN",
-        )
-        gather.say("Is there anything else you would like to add?", voice=v)
-        response.say("Thank you for your feedback! Goodbye.", voice=v)
-        response.hangup()
+    response.say(bye_msg, voice=v)
+    response.hangup()
 
     if customer:
+        customer["status"] = "completed"
         save_customers_to_disk()
 
     return Response(str(response), status=200, content_type="text/xml")

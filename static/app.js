@@ -29,6 +29,7 @@ function cacheElements() {
 
     // Voice Selector Elements
     elements.voiceSelect = document.getElementById("voiceSelect");
+    elements.selectRajasthaniVoiceBtn = document.getElementById("selectRajasthaniVoiceBtn");
     elements.playVoiceDemoBtn = document.getElementById("playVoiceDemoBtn");
 
     // Dashboard Elements
@@ -163,6 +164,24 @@ function renderVoiceDropdown() {
             </option>
         `;
     }).join("");
+
+    if (elements.voiceSelect) {
+        elements.voiceSelect.value = state.activeVoiceId;
+    }
+
+    if (elements.selectRajasthaniVoiceBtn) {
+        const isRajasthaniActive = state.activeVoiceId && (
+            state.activeVoiceId.includes("Neural2") || 
+            state.activeVoiceId.includes("Sarvam") || 
+            state.activeVoiceId.includes("Aditi") || 
+            state.activeVoiceId.includes("hi-IN")
+        );
+        if (isRajasthaniActive) {
+            elements.selectRajasthaniVoiceBtn.classList.add("active");
+        } else {
+            elements.selectRajasthaniVoiceBtn.classList.remove("active");
+        }
+    }
 }
 
 async function changeActiveVoice(voiceId) {
@@ -174,6 +193,7 @@ async function changeActiveVoice(voiceId) {
         });
         if (res && res.success) {
             state.activeVoiceId = res.active_voice;
+            renderVoiceDropdown();
             showToast(`Voice set to: ${res.voice_info ? res.voice_info.name : voiceId}`);
             playVoiceDemoAudio(voiceId);
         }
@@ -236,6 +256,15 @@ function bindEvents() {
     if (elements.voiceSelect) {
         elements.voiceSelect.addEventListener("change", (e) => {
             changeActiveVoice(e.target.value);
+        });
+    }
+
+    if (elements.selectRajasthaniVoiceBtn) {
+        elements.selectRajasthaniVoiceBtn.addEventListener("click", () => {
+            const rajasthaniVoice = state.voices.find(v => v.id.includes("hi-IN") || v.id.includes("Aditi") || (v.accent && (v.accent.includes("Rajasthani") || v.accent.includes("Marwari")))) || state.voices[2];
+            if (rajasthaniVoice) {
+                changeActiveVoice(rajasthaniVoice.id);
+            }
         });
     }
 
