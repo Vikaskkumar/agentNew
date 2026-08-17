@@ -403,12 +403,20 @@ function bindEvents() {
 }
 
 async function requestJson(url, options = {}) {
-    const response = await fetch(url, options);
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        throw new Error(data.error || "Request failed.");
+    try {
+        const response = await fetch(url, options);
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.error || `Server error (${response.status})`);
+        }
+        return data;
+    } catch (err) {
+        if (err.name === "TypeError" && (err.message === "Failed to fetch" || err.message.includes("fetch"))) {
+            console.warn("[Network Warning] Fetch request failed:", url, err);
+            throw new Error("Unable to connect to server backend. Please check network connection.");
+        }
+        throw err;
     }
-    return data;
 }
 
 async function loadCustomers(isSilent = false) {

@@ -61,8 +61,20 @@ app = Flask(
 
 @app.after_request
 def add_security_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, ngrok-skip-browser-warning, Bypass-Tunnel-Remainder"
     response.headers["ngrok-skip-browser-warning"] = "true"
     response.headers["Bypass-Tunnel-Remainder"] = "true"
+    return response
+
+
+@app.route("/api/<path:path>", methods=["OPTIONS"])
+def handle_options_preflight(path):
+    response = Response("", status=200)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, ngrok-skip-browser-warning, Bypass-Tunnel-Remainder"
     return response
 
 
