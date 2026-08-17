@@ -7,7 +7,7 @@ import urllib.parse
 import urllib.request
 import threading
 from typing import Dict, Any, List, Optional
-from flask import Flask, request, jsonify, render_template, Response
+from flask import Flask, request, jsonify, render_template, Response, send_from_directory
 from dotenv import load_dotenv
 
 try:
@@ -641,6 +641,38 @@ def generate_ai_response(customer_text: str, customer: Optional[Dict[str, Any]] 
 def index():
     """Serves main dashboard SPA."""
     return render_template("index.html")
+
+
+@app.route("/static/<path:filename>")
+def serve_static(filename):
+    """Serves static assets explicitly from STATIC_DIR with proper Content-Type & CORS headers."""
+    response = send_from_directory(STATIC_DIR, filename)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    if filename.endswith(".css"):
+        response.headers["Content-Type"] = "text/css; charset=utf-8"
+    elif filename.endswith(".js"):
+        response.headers["Content-Type"] = "text/javascript; charset=utf-8"
+    return response
+
+
+@app.route("/style.css")
+@app.route("/app.js")
+@app.route("/fluid_orb.png")
+@app.route("/favicon.ico")
+def serve_root_static():
+    """Fallback handler for root-level static asset requests."""
+    filename = request.path.lstrip("/")
+    if filename == "favicon.ico":
+        filename = "fluid_orb.png"
+    response = send_from_directory(STATIC_DIR, filename)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    if filename.endswith(".css"):
+        response.headers["Content-Type"] = "text/css; charset=utf-8"
+    elif filename.endswith(".js"):
+        response.headers["Content-Type"] = "text/javascript; charset=utf-8"
+    return response
 
 
 
