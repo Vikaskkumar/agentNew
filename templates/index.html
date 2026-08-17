@@ -1,25 +1,21 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Feedback Voice AI Agent</title>
+    <title>VoiceFeed AI - AI Voice Feedback Agent</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1.0.1">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=8.0.0">
 </head>
 <body>
 
 <!-- ADMIN LOGIN OVERLAY SCREEN -->
-<div id="loginOverlay" class="login-overlay active">
+<div id="loginOverlay" class="login-overlay hidden">
     <div class="login-card">
-        <div class="login-orb-header">
-            <img src="{{ url_for('static', filename='fluid_orb.png') }}" alt="Voice AI Fluid Orb" class="login-orb-img">
-            <div class="login-orb-glow"></div>
-        </div>
-
-        <div class="login-content">
+        <div class="login-logo-badge">🎙️</div>
+        <div>
             <h2 class="login-title">Admin Access Portal</h2>
             <p class="login-subtitle">Enter credentials to unlock Customer Feedback Operations</p>
         </div>
@@ -29,239 +25,393 @@
                 Invalid Admin Name or Password.
             </div>
 
-            <div class="form-input-group">
-                <label for="adminUsername">Admin Name</label>
-                <input id="adminUsername" type="text" placeholder="e.g. VIKAS" required autocomplete="username">
+            <div class="form-input-block">
+                <label for="adminUsername" class="form-label">Admin Name</label>
+                <input id="adminUsername" class="form-input-field" type="text" placeholder="e.g. VIKAS" required autocomplete="username">
             </div>
 
-            <div class="form-input-group">
-                <label for="adminPassword">Password</label>
-                <input id="adminPassword" type="password" placeholder="••••" required autocomplete="current-password">
+            <div class="form-input-block">
+                <label for="adminPassword" class="form-label">Password</label>
+                <input id="adminPassword" class="form-input-field" type="password" placeholder="••••" required autocomplete="current-password">
             </div>
 
-            <button id="loginSubmitBtn" type="submit" class="btn btn-primary login-btn">Unlock Portal 🔓</button>
+            <button id="loginSubmitBtn" type="submit" class="btn-call-large" style="margin-top: 10px;">
+                Unlock Portal 🔓
+            </button>
         </form>
     </div>
 </div>
 
-<!-- MAIN DASHBOARD CONTENT -->
-<div id="dashboardApp" class="agent-dashboard-container hidden-auth">
+<!-- MAIN DASHBOARD APPLICATION SHELL -->
+<div id="dashboardApp" class="app-shell">
 
-    <!-- Top Floating Header Bar -->
-    <header class="top-nav-bar">
-        <div class="nav-brand">
-            <span class="pulse-dot active"></span>
-            <span class="brand-text">FEEDBACK VOICE AI</span>
+    <!-- LEFT SIDEBAR NAVIGATION -->
+    <aside class="app-sidebar">
+        <div class="sidebar-top">
+            <!-- Brand Header -->
+            <div class="sidebar-brand-header">
+                <div class="brand-logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3v18M8 6v12M16 8v8M4 10v4M20 10v4"></path></svg>
+                </div>
+                <div class="brand-title-group">
+                    <h1 class="brand-title">VoiceFeed <span class="brand-highlight">AI</span></h1>
+                    <span class="brand-subtitle">AI Voice Feedback Agent</span>
+                </div>
+            </div>
+
+            <!-- Navigation Menu Links -->
+            <nav class="sidebar-nav-menu">
+                <a class="sidebar-nav-item active" data-view="dashboard">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    </span>
+                    <span>Dashboard</span>
+                </a>
+
+                <a class="sidebar-nav-item" data-view="make-calls">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    </span>
+                    <span>Make Calls</span>
+                </a>
+
+                <a class="sidebar-nav-item" data-view="feedbacks">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    </span>
+                    <span>Feedbacks</span>
+                </a>
+            </nav>
         </div>
 
-        <div class="nav-controls">
-            <!-- Voice Agent Selector with Demo Play button & Marwari/Rajasthani Quick Button -->
-            <div class="voice-selector-wrap">
-                <select id="voiceSelect" class="select-filter voice-select" title="Choose AI Voice Agent">
-                    <option value="">Loading Voices...</option>
-                </select>
-                <button id="selectRajasthaniVoiceBtn" class="btn btn-accent btn-sm voice-chip-btn" type="button" title="Quick Switch to Marwari + Rajasthani + Hindi Voice Model">
-                    🏜️ Marwari & Rajasthani
+        <div class="sidebar-bottom">
+            <nav class="sidebar-nav-menu">
+                <a class="sidebar-nav-item" data-view="settings">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    </span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <!-- Sidebar User Profile Footer (VK - Vikas Kumar) -->
+            <div class="sidebar-user-footer">
+                <div class="user-avatar-initials">VK</div>
+                <div class="user-name-role">
+                    <span class="user-display-name">Vikas Kumar</span>
+                    <span class="user-email-label">vikas@example.com</span>
+                </div>
+                <button id="themeToggleBtn" class="footer-icon-btn" type="button" title="Toggle Light/Dark Theme">
+                    <span id="themeIcon">☀️</span>
                 </button>
-                <button id="playVoiceDemoBtn" class="btn btn-secondary btn-sm" type="button" title="Play Voice Audio Demo">
-                    🔊 Demo
+                <button id="logoutBtn" class="footer-icon-btn danger" type="button" title="Logout Portal">
+                    🔒
                 </button>
             </div>
-
-            <span class="admin-badge">Admin: <strong>VIKAS</strong></span>
-
-            <button id="addCustomerModalBtn" class="btn btn-primary btn-sm" type="button">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                New Task
-            </button>
-
-            <button id="resetSeedBtn" class="btn btn-outline btn-sm" type="button" title="Reset Sample Data">Reset Data</button>
-
-            <button id="themeToggleBtn" class="theme-toggle-icon" type="button" title="Toggle Light/Dark Theme">
-                <span id="themeIcon">☀️</span>
-            </button>
-
-            <button id="logoutBtn" class="btn btn-danger btn-sm" type="button" title="Lock / Logout Portal">Logout 🚪</button>
         </div>
-    </header>
+    </aside>
 
-    <!-- Main Clean Layout -->
-    <main class="main-scroll-layout">
+    <!-- RIGHT MAIN CONTENT VIEW AREA -->
+    <main class="main-content">
 
-        <!-- CLEAN CENTERED AGENT HERO CARD -->
-        <section class="card-panel clean-hero-card">
-            <div class="clean-hero-orb-wrap">
-                <img src="{{ url_for('static', filename='fluid_orb.png') }}" alt="Voice AI Agent Fluid Orb" class="fluid-orb-img">
-                <div class="orb-glow-layer"></div>
+        <!-- TOP HEADER -->
+        <header class="top-header">
+            <div class="header-title-wrap">
+                <h1>Hello, Vikas! 👋</h1>
+                <p class="header-subtitle">Here's what's happening with your AI voice agent.</p>
             </div>
-            <div class="clean-hero-content">
-                <h1 class="clean-hero-title">Customer Feedback Voice AI</h1>
-                <p class="clean-hero-subtitle">Outbound automated feedback collector powered by Gemini 2.5 & Google Chirp3 HD Voice</p>
-            </div>
-        </section>
 
-        <!-- FULL SCREEN / FULL WIDTH AGENT TASKS CARD -->
-        <section class="card-panel full-width-task-card">
-            <div class="panel-header-toolbar">
-                <div>
-                    <h2 class="panel-title">Customer Feedback Operations</h2>
-                    <p class="panel-subtitle">Click on any row to open feedback details & call transcript</p>
+            <div class="header-actions">
+                <div class="date-range-wrap">
+                    <svg class="calendar-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <select id="dateRangeSelect" class="date-range-dropdown" title="Select Date Range">
+                        <option value="last7">Aug 11 – Aug 17, 2025</option>
+                        <option value="today">Today (Aug 17, 2025)</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="last30">Last 30 Days</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
+                
+                <div class="user-menu-wrap">
+                    <button id="headerAvatarBtn" class="header-user-avatar" type="button" title="View Profile Menu">VK</button>
+                    
+                    <div id="userProfilePopup" class="user-popup-card hidden">
+                        <div class="user-popup-header">
+                            <div class="user-avatar-initials">VK</div>
+                            <div class="user-name-role">
+                                <span class="user-display-name">Vikas Kumar</span>
+                                <span class="user-email-label">vikas@example.com</span>
+                            </div>
+                        </div>
+                        <div class="user-popup-divider"></div>
+                        <button id="popupLogoutBtn" class="user-popup-item danger-item" type="button">
+                            🔒 Lock Portal / Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD VIEW PAGE -->
+        <div id="dashboardView" class="view-content active">
+
+            <!-- 4 METRIC KPI CARDS -->
+            <section class="metric-cards-grid">
+                <div class="metric-card" data-filter="all">
+                    <div class="metric-icon-box blue">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Calls Made</span>
+                        <h2 id="kpiCountCalls" class="metric-value">128</h2>
+                        <div class="metric-trend green">
+                            <span>↑ 18%</span> <span class="trend-subtext">vs last 7 days</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="toolbar-actions">
-                    <div class="search-box">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input id="customerSearch" type="search" placeholder="Search task name or phone...">
+                <div class="metric-card" data-filter="all">
+                    <div class="metric-icon-box green">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                     </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Feedbacks</span>
+                        <h2 id="kpiCountFeedbacks" class="metric-value">96</h2>
+                        <div class="metric-trend green">
+                            <span>↑ 12%</span> <span class="trend-subtext">vs last 7 days</span>
+                        </div>
+                    </div>
+                </div>
 
-                    <select id="statusFilter" class="select-filter">
-                        <option value="all">All Task Statuses</option>
-                        <option value="pending">Waiting Queue</option>
-                        <option value="calling">In Progress</option>
-                        <option value="completed">Completed</option>
-                        <option value="failed">Failed / No Answer</option>
+                <div class="metric-card" data-filter="positive">
+                    <div class="metric-icon-box purple">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Positive</span>
+                        <h2 id="kpiCountPosPercent" class="metric-value">72%</h2>
+                        <div class="metric-trend green">
+                            <span>↑ 8%</span> <span class="trend-subtext">vs last 7 days</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metric-card" data-filter="negative">
+                    <div class="metric-icon-box orange">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 16s-1.5-2-4-2-4 2-4 2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Negative</span>
+                        <h2 id="kpiCountNegPercent" class="metric-value">28%</h2>
+                        <div class="metric-trend red">
+                            <span>↓ 5%</span> <span class="trend-subtext">vs last 7 days</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HORIZONTAL AI VOICE PERSONA BANNER ON DASHBOARD -->
+            <section class="card voice-banner-horizontal">
+                <div class="banner-left">
+                    <div class="banner-avatar-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line><line x1="8" y1="22" x2="16" y2="22"></line></svg>
+                    </div>
+                    <div class="banner-info">
+                        <div class="banner-title-row">
+                            <h3 class="banner-title">AI Voice Persona</h3>
+                            <span class="banner-live-tag">● Active Persona</span>
+                        </div>
+                        <p class="banner-subtitle">Select and preview voice models for natural customer survey calls.</p>
+                    </div>
+                </div>
+
+                <div class="banner-right">
+                    <select id="voiceSelect" class="voice-dropdown-clean" title="Select Active AI Voice Model">
+                        <!-- Populated dynamically via app.js -->
                     </select>
-
-                    <button id="refreshBtn" class="btn btn-secondary icon-only" title="Refresh Tasks">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                    <button id="selectRajasthaniVoiceBtn" class="btn-voice-chip" type="button" title="Quick switch to Marwari / Rajasthani model">
+                        🏜️ Marwari
+                    </button>
+                    <button id="playVoiceDemoBtn" class="btn-voice-chip demo-chip" type="button" title="Play Voice Preview Audio">
+                        🔊 Demo
+                    </button>
+                    <button id="resetSeedBtn" class="btn-voice-chip seed-chip" type="button" title="Reset Sample Data">
+                        🔄 Seed
                     </button>
                 </div>
-            </div>
+            </section>
 
-            <!-- Full-Width Data Table -->
-            <div class="table-frame">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 22%;">Task / Customer Info</th>
-                            <th style="width: 16%;">Phone Number</th>
-                            <th style="width: 15%;">Agent Task Status</th>
-                            <th style="width: 15%;">Star Rating</th>
-                            <th style="width: 22%;">Customer Feedback</th>
-                            <th style="width: 10%;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="customerTable">
-                        <tr>
-                            <td colspan="6" class="empty-cell">Loading agent tasks...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+            <!-- RECENT FEEDBACKS CARD (FULL WIDTH ON DASHBOARD) -->
+            <section class="card recent-feedbacks-card flex-fill">
+                <div class="card-header-clean space-between">
+                    <div>
+                        <h2 class="card-title">Recent Feedbacks</h2>
+                    </div>
+
+                    <div class="header-controls-group">
+                        <input id="customerSearch" class="search-input-clean" type="text" placeholder="Search customer...">
+                        <select id="statusFilter" class="filter-dropdown-clean">
+                            <option value="all">All Sentiments</option>
+                            <option value="positive">Positive</option>
+                            <option value="neutral">Neutral</option>
+                            <option value="negative">Negative</option>
+                        </select>
+                        <button id="refreshBtn" class="icon-btn-clean" title="Refresh Feedbacks">🔄</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="feedback-table-clean">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Feedback</th>
+                                <th>Sentiment</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customerTable">
+                            <!-- Populated dynamically via app.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- DETAILED FEEDBACKS VIEW PAGE -->
+        <div id="feedbacksView" class="view-content hidden">
+            <section class="card feedbacks-header-card">
+                <div class="card-header-clean space-between" style="margin-bottom: 0;">
+                    <div>
+                        <h2 class="card-title">Detailed Feedback Records</h2>
+                        <p class="card-subtitle">Complete transcript logs, ratings, and spoken quotes collected by AI Voice Agent.</p>
+                    </div>
+
+                    <div class="header-controls-group">
+                        <input id="feedbacksSearch" class="search-input-clean" type="text" placeholder="Search feedback or customer...">
+                        <select id="feedbacksFilter" class="filter-dropdown-clean">
+                            <option value="all">All Sentiments</option>
+                            <option value="positive">Positive</option>
+                            <option value="neutral">Neutral</option>
+                            <option value="negative">Negative</option>
+                        </select>
+                        <button id="feedbacksRefreshBtn" class="icon-btn-clean" title="Refresh Feedbacks">🔄</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="detailedFeedbacksContainer" class="feedbacks-cards-grid flex-fill">
+                <!-- Populated dynamically via app.js -->
+            </section>
+        </div>
+
+        <!-- MAKE CALLS VIEW PAGE -->
+        <div id="makeCallsView" class="view-content hidden">
+            <section class="card make-call-card-full">
+                <div class="card-header-clean">
+                    <h2 class="card-title">Make a Call</h2>
+                    <p class="card-subtitle">Start a new call and collect feedback with AI voice agent.</p>
+                </div>
+
+                <form id="customerForm" class="make-call-form-full">
+                    <div class="form-row-grid">
+                        <div class="input-field-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            <input id="customerName" class="clean-input" type="text" placeholder="Customer Name (e.g. Ravi Sharma)" required>
+                        </div>
+
+                        <div class="input-field-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            <input id="customerPhone" class="clean-input" type="tel" placeholder="Enter phone number" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="addCustomerBtn" class="btn-start-call-solid">
+                        <span>📞 Start AI Voice Call</span>
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <footer class="app-footer">
+            <p>© 2025 VoiceFeed AI. All rights reserved.</p>
+        </footer>
 
     </main>
+
 </div>
 
-<!-- Modal Dialog: Quick Add Customer Task -->
-<div id="addCustomerModal" class="modal-overlay">
-    <div class="modal-card mini">
-        <div class="modal-header">
-            <h3>Add New Agent Task</h3>
-            <button id="closeAddModalBtn" class="close-btn">&times;</button>
-        </div>
-        <form id="customerForm" class="modal-form">
-            <div class="form-input-group">
-                <label for="customerName">Customer Name</label>
-                <input id="customerName" name="name" type="text" placeholder="e.g. Alex Morgan" required>
-            </div>
-            <div class="form-input-group">
-                <label for="customerPhone">Phone Number</label>
-                <input id="customerPhone" name="phone" type="tel" placeholder="+919057262630" required>
-            </div>
-            <div class="modal-form-actions">
-                <button id="addCustomerBtn" class="btn btn-primary" type="submit">Queue Agent Task</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Ultra-Clean Detailed Feedback Page / Inspector Modal -->
-<div id="feedbackDetailModal" class="modal-overlay">
-    <div class="modal-card clean-detail-card">
-        <!-- Clean Header -->
-        <div class="clean-detail-header">
-            <div class="clean-profile-block">
-                <div class="clean-avatar">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                </div>
-                <div>
-                    <h2 id="detailCustomerName" class="clean-title">Customer Name</h2>
-                    <span id="detailCustomerPhone" class="clean-phone">+91 ...</span>
-                </div>
-            </div>
-
-            <div class="clean-meta-badges">
-                <div id="detailCustomerRating" class="rating-stars-badge">★ 5.0</div>
-                <span id="detailCustomerSentiment" class="sentiment-tag positive">Positive</span>
-                <span id="detailCustomerStatus" class="status-pill completed">Completed</span>
-                <button id="closeDetailModalBtn" class="close-btn">&times;</button>
-            </div>
-        </div>
-
-        <div class="clean-detail-body">
-            <!-- Customer Spoken Feedback Section -->
-            <div class="clean-section">
-                <h4 class="clean-section-label">CUSTOMER SPOKEN FEEDBACK</h4>
-                <div id="detailFeedbackQuotes" class="clean-quotes-list">
-                    <div class="clean-quote-item">No feedback recorded yet.</div>
-                </div>
-            </div>
-
-            <!-- Full Call Conversation Dialogue -->
-            <div class="clean-section">
-                <h4 class="clean-section-label">FULL CALL CONVERSATION</h4>
-                <div id="detailConversation" class="clean-dialogue-box">
-                    <div class="transcript-empty">No call transcript recorded yet.</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="modal-footer">
-            <button id="detailCallBtn" class="btn btn-primary">Start New Call</button>
-            <button id="detailClearFeedbackBtn" class="btn btn-danger">Clear Feedback</button>
-            <button id="closeDetailFooterBtn" class="btn btn-secondary">Close</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Drawer: Transcript Inspection -->
+<!-- TRANSCRIPT INSPECTOR MODAL -->
 <div id="transcriptModal" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-header">
-            <div>
-                <span class="modal-subtitle">VOICE AI CONVERSATION INSPECTOR</span>
-                <h3 id="modalCustomerName">Customer Call Transcript</h3>
-            </div>
-            <button id="closeModalBtn" class="close-btn">&times;</button>
-        </div>
-
-        <div class="modal-body">
-            <div class="call-banner">
-                <div class="call-status-indicator">
-                    <span class="waveform"><span></span><span></span><span></span></span>
-                    <span id="modalCallStatus">Active Session</span>
-                </div>
-                <div class="call-meta">
-                    <span id="modalCustomerPhone">+91 ...</span>
-                    <span id="modalCustomerSentiment" class="sentiment-tag neutral">Neutral</span>
+    <div class="modal-box modal-box-large">
+        <div class="modal-header-premium">
+            <div class="header-modal-left">
+                <div class="modal-avatar-glow">🎙️</div>
+                <div class="modal-title-wrap">
+                    <h3 class="modal-title" id="modalCustomerName">Sarah Jenkins</h3>
+                    <span id="modalLiveBadge" class="modal-status-badge">✅ CALL COMPLETED</span>
                 </div>
             </div>
+            <button class="modal-close-btn" id="closeModalBtn" title="Close Modal">✕</button>
+        </div>
 
-            <div class="transcript-box" id="transcriptConversation">
-                <div class="transcript-empty">No conversation recorded yet. Initiate task to start call.</div>
+        <div class="modal-meta-bar">
+            <div class="meta-item">
+                <span class="meta-icon">📱</span>
+                <span id="modalCustomerPhone" class="meta-value">+91 9057262630</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-icon">⏱️</span>
+                <span id="modalCustomerDuration" class="meta-value">02:15 min</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-icon">⭐</span>
+                <span id="modalCustomerRating" class="meta-value">5 / 5</span>
+            </div>
+            <div class="meta-item">
+                <span id="modalCustomerSentiment" class="sentiment-badge-clean positive">❇️ Positive</span>
             </div>
         </div>
-        
-        <div class="modal-footer">
-            <button id="modalCallBtn" class="btn btn-primary">Start Call Now</button>
-            <button id="modalCloseFooterBtn" class="btn btn-secondary">Close</button>
+
+        <!-- AUDIO WAVEFORM VISUALIZER BAR -->
+        <div class="modal-audio-bar">
+            <button id="modalPlayAudioBtn" class="btn-audio-play" type="button">
+                <span class="play-icon">▶</span> Play Recording
+            </button>
+            <div id="waveformEqualizer" class="equalizer-waveform">
+                <span class="bar bar-1"></span>
+                <span class="bar bar-2"></span>
+                <span class="bar bar-3"></span>
+                <span class="bar bar-4"></span>
+                <span class="bar bar-5"></span>
+                <span class="bar bar-6"></span>
+                <span class="bar bar-7"></span>
+                <span class="bar bar-8"></span>
+                <span class="bar bar-9"></span>
+                <span class="bar bar-10"></span>
+            </div>
+            <span id="modalAudioTime" class="audio-time-label">01:42 / 02:15</span>
+        </div>
+
+        <div class="modal-body-content">
+            <div id="transcriptConversation" class="transcript-chat-box">
+                <!-- Spoken dialog bubbles populated by app.js -->
+            </div>
+        </div>
+
+        <div class="modal-footer-actions">
+            <button id="modalRecallBtn" class="btn-table-call" type="button">📞 Re-Call Customer</button>
+            <button id="modalDownloadBtn" class="btn-table-transcript" type="button">📥 Export Log</button>
+            <button id="modalCloseFooterBtn" class="btn-modal-close-secondary" type="button">Close Inspector</button>
         </div>
     </div>
 </div>
 
+<!-- TOAST NOTIFICATION -->
 <div id="toast" class="toast-notification"></div>
 
-<script src="{{ url_for('static', filename='app.js') }}?v=1.0.2"></script>
+<script src="{{ url_for('static', filename='app.js') }}?v=8.0.0"></script>
 </body>
 </html>

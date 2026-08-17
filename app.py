@@ -27,7 +27,7 @@ IS_CLOUD_PROD = IS_RENDER or IS_VERCEL or (os.name != "nt")
 
 # Client Initializations
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
 
 gemini = None
 if GEMINI_API_KEY:
@@ -481,41 +481,110 @@ def get_initial_seed_data() -> List[Dict[str, Any]]:
     return [
         {
             "id": "c101",
-            "name": "Vikas Kumar",
-            "phone": "+919057262630",
+            "name": "Rohit Sharma",
+            "phone": "+919876543210",
             "status": "completed",
-            "feedback": [
-                "The service was wonderful! Quick delivery and friendly staff.",
-                "I would rate it 5 stars.",
-            ],
+            "duration": "02:35",
+            "feedback": ["Very satisfied with the product quality and customer support."],
             "rating": 5,
             "sentiment": "Positive",
             "transcript": [
-                {
-                    "speaker": "ai",
-                    "text": "Hello! This is Sarah calling from Feedback Ops. How was your experience with our service?",
-                },
-                {
-                    "speaker": "customer",
-                    "text": "The service was wonderful! Quick delivery and friendly staff.",
-                },
-                {
-                    "speaker": "ai",
-                    "text": "That is so great to hear! How many stars out of 5 would you give us?",
-                },
-                {"speaker": "customer", "text": "I would rate it 5 stars."},
-                {
-                    "speaker": "ai",
-                    "text": "Thank you so much for your feedback! Have a lovely day. Goodbye.",
-                },
+                {"speaker": "ai", "text": "Hello Rohit! Calling from VoiceFeedback AI. How was your experience?"},
+                {"speaker": "customer", "text": "Very satisfied with the product quality and customer support."},
+                {"speaker": "ai", "text": "Wonderful! Thank you so much for your 5 star rating."}
             ],
-            "created_at": time.strftime("%Y-%m-%d %H:%M"),
-            "last_call": "10:17 AM",
+            "created_at": "Aug 17, 2025 10:24 AM",
+            "last_call": "2 days ago"
+        },
+        {
+            "id": "c102",
+            "name": "Priya Mehta",
+            "phone": "+918765432109",
+            "status": "completed",
+            "duration": "03:12",
+            "feedback": ["Delivery was on time but packaging could be better."],
+            "rating": 3,
+            "sentiment": "Neutral",
+            "transcript": [
+                {"speaker": "ai", "text": "Hello Priya! How was your recent order delivery?"},
+                {"speaker": "customer", "text": "Delivery was on time but packaging could be better."},
+                {"speaker": "ai", "text": "Thank you for letting us know! We will improve our packaging."}
+            ],
+            "created_at": "Aug 17, 2025 09:58 AM",
+            "last_call": "3 days ago"
+        },
+        {
+            "id": "c103",
+            "name": "Arjun Verma",
+            "phone": "+917654321098",
+            "status": "completed",
+            "duration": "01:48",
+            "feedback": ["The product stopped working after a few days. Need help."],
+            "rating": 1,
+            "sentiment": "Negative",
+            "transcript": [
+                {"speaker": "ai", "text": "Hello Arjun! Calling regarding your service ticket."},
+                {"speaker": "customer", "text": "The product stopped working after a few days. Need help."},
+                {"speaker": "ai", "text": "We sincerely apologize! Our technician will reach out immediately."}
+            ],
+            "created_at": "Aug 17, 2025 09:41 AM",
+            "last_call": "5 days ago"
+        },
+        {
+            "id": "c104",
+            "name": "Neha Kapoor",
+            "phone": "+916543210987",
+            "status": "completed",
+            "duration": "02:05",
+            "feedback": ["Great experience overall. Will recommend to others!"],
+            "rating": 5,
+            "sentiment": "Positive",
+            "transcript": [
+                {"speaker": "ai", "text": "Hi Neha! Thank you for choosing our service. How did we do?"},
+                {"speaker": "customer", "text": "Great experience overall. Will recommend to others!"},
+                {"speaker": "ai", "text": "Awesome! Have a fantastic day!"}
+            ],
+            "created_at": "Aug 17, 2025 09:20 AM",
+            "last_call": "1 week ago"
+        },
+        {
+            "id": "c105",
+            "name": "Manish Yadav",
+            "phone": "+915432109876",
+            "status": "completed",
+            "duration": "02:22",
+            "feedback": ["The app is good but it needs more payment options."],
+            "rating": 3,
+            "sentiment": "Neutral",
+            "transcript": [
+                {"speaker": "ai", "text": "Hello Manish! How is the app experience going?"},
+                {"speaker": "customer", "text": "The app is good but it needs more payment options."},
+                {"speaker": "ai", "text": "Got it! Adding more payment options soon."}
+            ],
+            "created_at": "Aug 17, 2025 08:55 AM",
+            "last_call": "1 week ago"
+        },
+        {
+            "id": "c106",
+            "name": "Sneha Iyer",
+            "phone": "+914321098765",
+            "status": "completed",
+            "duration": "03:01",
+            "feedback": ["Support team was very helpful and resolved my issue quickly."],
+            "rating": 5,
+            "sentiment": "Positive",
+            "transcript": [
+                {"speaker": "ai", "text": "Hi Sneha! Calling to confirm if your support ticket was resolved?"},
+                {"speaker": "customer", "text": "Support team was very helpful and resolved my issue quickly."},
+                {"speaker": "ai", "text": "Glad to hear that! Goodbye."}
+            ],
+            "created_at": "Aug 17, 2025 08:30 AM",
+            "last_call": "2 weeks ago"
         }
     ]
 
 
-DB_FILE_PATH = os.path.join("/tmp" if IS_VERCEL else os.path.dirname(__file__), "customers_store.json")
+DB_FILE_PATH = os.path.join("/tmp" if IS_CLOUD_PROD else os.path.dirname(__file__), "customers_store.json")
 
 
 def load_customers_from_disk() -> List[Dict[str, Any]]:
@@ -620,7 +689,7 @@ def generate_ai_response(customer_text: str, customer: Optional[Dict[str, Any]] 
                     "3. Keep your reply super concise (maximum 15 words).\n"
                     "4. Speak naturally without markdown or internal labels."
                 )
-            for model_candidate in [GEMINI_MODEL, "gemini-2.5-flash", "gemini-1.5-flash"]:
+            for model_candidate in [GEMINI_MODEL, "gemini-3.6-flash", "gemini-2.5-flash"]:
                 try:
                     res = gemini.models.generate_content(model=model_candidate, contents=prompt)
                     if res and res.text:
@@ -715,6 +784,7 @@ def health():
 
 
 @app.route("/api/voices", methods=["GET", "POST"])
+@app.route("/api/voices/select", methods=["POST"])
 def manage_voices():
     """Fetches catalog or updates active AI voice."""
     global ACTIVE_VOICE
@@ -766,7 +836,10 @@ def handle_customers():
         phone = normalize_phone_number(raw_phone)
         existing = find_customer(phone=phone)
         if existing:
-            return jsonify({"success": False, "error": f"Customer with phone {phone} already exists ({existing['name']})"}), 400
+            existing["name"] = name
+            existing["status"] = "pending"
+            save_customers_to_disk()
+            return jsonify({"success": True, "customer": existing, "message": "Updated existing customer task"}), 200
 
         customer = {
             "id": f"c{int(time.time() % 100000)}",
@@ -879,13 +952,67 @@ def reset_seed_data():
 
 
 
+@app.route("/api/customers/<customer_id>/call", methods=["POST"])
+def call_customer_by_id(customer_id):
+    """Triggers outbound call for a specific customer ID."""
+    return trigger_outbound_call(customer_id=customer_id)
+
+
 @app.route("/api/call", methods=["POST"])
 def make_call():
     """Triggers outbound AI voice feedback call."""
     data = request.get_json(force=True, silent=True) or {}
     customer_id = data.get("customer_id")
     phone = data.get("phone")
+    return trigger_outbound_call(customer_id=customer_id, phone=phone)
 
+
+def simulate_live_call(customer_id: str) -> None:
+    """Simulates realistic live call transcript progression over background thread."""
+    c = find_customer(customer_id=customer_id)
+    if not c:
+        return
+
+    agent_name = get_active_agent_name()
+    is_marwari = is_marwari_accent_active()
+
+    if is_marwari:
+        greeting = f"राम राम सा! मैं बीसीटी फ़ाइबरनेट से {agent_name} बोल रहा हूँ। आपकी इंटरनेट सेवा कैसी चल रही है?"
+        customer_reply = "स्पीड बढ़िया मिल रही है, बस कभी-कभार शाम को थोड़ी धीमी होती है।"
+        ai_response = "अच्छा, समझ गया सा। आपकी बात नोट कर ली है, शाम को स्पीड की जांच करवाएंगे।"
+    else:
+        greeting = f"Hello {c['name']}! I am {agent_name} from BCT Fibernet, calling for quick feedback on your internet service. How is your experience?"
+        customer_reply = "The internet speed is very good! I am really satisfied with the support team as well."
+        ai_response = "That is so wonderful to hear! Thank you so much for giving us your valuable feedback. Have a great day!"
+
+    # Step 1: Initial call connected & greeting
+    c["status"] = "calling"
+    c["last_call"] = time.strftime("%H:%M:%S")
+    c["transcript"] = [{"speaker": "ai", "text": greeting}]
+    c["sentiment"] = "Neutral"
+    save_customers_to_disk()
+
+    # Step 2: Customer speaks after 2.5 seconds
+    time.sleep(2.5)
+    c = find_customer(customer_id=customer_id)
+    if c:
+        c.setdefault("feedback", []).append(customer_reply)
+        c.setdefault("transcript", []).append({"speaker": "customer", "text": customer_reply})
+        c["sentiment"] = "Positive"
+        c["rating"] = 5
+        save_customers_to_disk()
+
+    # Step 3: AI closing response after 2.5 seconds & completion
+    time.sleep(2.5)
+    c = find_customer(customer_id=customer_id)
+    if c:
+        c.setdefault("transcript", []).append({"speaker": "ai", "text": ai_response})
+        c["status"] = "completed"
+        save_customers_to_disk()
+
+
+def trigger_outbound_call(customer_id=None, phone=None):
+    """Unified handler to execute outbound Twilio call."""
     customer = find_customer(customer_id=customer_id, phone=phone)
     if customer_id and not customer:
         return jsonify({"success": False, "error": "Customer ID not found"}), 404
@@ -899,7 +1026,7 @@ def make_call():
         customer["phone"] = target_phone
 
     base = get_base_url()
-    if not is_public_host(base):
+    if twilio and not is_public_host(base):
         return jsonify({
             "success": False,
             "error": "No active public HTTPS tunnel connected. Cloudflare quick tunnel is currently rate-limited (429). Please set a valid public BASE_URL in .env (e.g. ngrok http 5000) or wait for Cloudflare cooldown."
@@ -914,10 +1041,13 @@ def make_call():
     if not twilio:
         if customer:
             customer["status"] = "calling"
+            customer["last_call"] = time.strftime("%H:%M:%S")
+            save_customers_to_disk()
+            threading.Thread(target=simulate_live_call, args=(customer["id"],), daemon=True).start()
         return jsonify({
             "success": True,
             "simulated": True,
-            "message": f"Twilio client not initialized with real SID/Token, simulated call status for {target_phone}.",
+            "message": f"Twilio client not initialized with real SID/Token, simulated live call started for {target_phone}.",
         })
 
     try:
