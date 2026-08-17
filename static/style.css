@@ -1547,7 +1547,7 @@ button:active, .btn-table-call:active, .btn-table-transcript:active, .btn-table-
 
 .login-card {
     background-color: var(--bg-card); border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg); padding: 32px; width: 100%; max-width: 380px;
+    border-radius: var(--radius-lg); padding: 32px; width: 100%; max-width: 380px; margin: 0 16px;
     box-shadow: var(--shadow-hover); display: flex; flex-direction: column; gap: 16px; text-align: center;
 }
 
@@ -1824,11 +1824,14 @@ button:active, .btn-table-call:active, .btn-table-transcript:active, .btn-table-
         margin-bottom: 10px;
         padding: 12px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        word-break: break-word;
+        overflow: hidden;
     }
 
     .feedback-table-clean td {
         padding: 4px 0;
         border: none !important;
+        max-width: 100%;
     }
 
     .feedback-table-clean td:first-child {
@@ -1880,6 +1883,25 @@ button:active, .btn-table-call:active, .btn-table-transcript:active, .btn-table-
         height: 34px;
         justify-content: center;
         font-size: 0.78rem;
+    }
+
+    /* Header User Popup Mobile Modal Transformation */
+    .user-popup-card {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 85vw;
+        max-width: 320px;
+        z-index: 300;
+        box-shadow: 0 0 0 100vmax rgba(0,0,0,0.4), 0 20px 40px rgba(0, 0, 0, 0.4);
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .user-popup-item {
+        padding: 10px 14px;
+        font-size: 0.85rem;
     }
 
     /* Make Calls Page Mobile Layout */
