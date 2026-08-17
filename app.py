@@ -8,10 +8,15 @@ import urllib.request
 import threading
 from typing import Dict, Any, List, Optional
 from flask import Flask, request, jsonify, render_template, Response
-from twilio.rest import Client
-from twilio.twiml.voice_response import VoiceResponse
 from dotenv import load_dotenv
-from google import genai
+
+try:
+    from twilio.rest import Client
+    from twilio.twiml.voice_response import VoiceResponse
+except Exception as ex:
+    Client = None
+    VoiceResponse = None
+    print(f"[Twilio Package Warning] {ex}")
 
 load_dotenv()
 
@@ -23,14 +28,35 @@ IS_CLOUD_PROD = IS_RENDER or IS_VERCEL or (os.name != "nt")
 # Client Initializations
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-gemini = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
+
+gemini = None
+if GEMINI_API_KEY:
+    try:
+        from google import genai
+        gemini = genai.Client(api_key=GEMINI_API_KEY)
+    except Exception as ex:
+        print(f"[Gemini Init Warning] {ex}")
 
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
-twilio = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if (TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN) else None
 
-app = Flask(__name__)
+twilio = None
+if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN and Client:
+    try:
+        twilio = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    except Exception as ex:
+        print(f"[Twilio Init Warning] {ex}")
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
+app = Flask(
+    __name__,
+    template_folder=TEMPLATE_DIR,
+    static_folder=STATIC_DIR,
+)
 
 
 @app.after_request
@@ -610,6 +636,8 @@ def generate_ai_response(customer_text: str, customer: Optional[Dict[str, Any]] 
 
 
 @app.route("/")
+@app.route("/api/index")
+@app.route("/api/index.py")
 def index():
     """Serves main dashboard SPA."""
     return render_template("index.html")
