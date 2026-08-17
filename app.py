@@ -204,11 +204,13 @@ def get_base_url() -> str:
     global active_tunnel_url
     try:
         if request and request.host:
-            req_proto = request.headers.get("X-Forwarded-Proto", "https")
             req_host = request.headers.get("X-Forwarded-Host") or request.host
-            req_host = req_host.rstrip("/")
+            req_host = req_host.split(",")[0].strip().rstrip("/")
             if is_public_host(req_host):
-                live_url = f"{req_proto}://{req_host}" if not req_host.startswith("http") else req_host
+                if not req_host.startswith("http"):
+                    live_url = f"https://{req_host}"
+                else:
+                    live_url = req_host.replace("http://", "https://")
                 active_tunnel_url = live_url
                 return live_url
     except Exception:
@@ -217,24 +219,29 @@ def get_base_url() -> str:
     r_host = os.getenv("RENDER_EXTERNAL_HOSTNAME")
     if r_host:
         r_host = r_host.rstrip("/")
-        return f"https://{r_host}" if not r_host.startswith("http") else r_host
+        if not r_host.startswith("http"):
+            return f"https://{r_host}"
+        return r_host.replace("http://", "https://")
 
     v_url = os.getenv("VERCEL_URL")
     if v_url:
         v_url = v_url.rstrip("/")
-        return f"https://{v_url}" if not v_url.startswith("http") else v_url
+        if not v_url.startswith("http"):
+            return f"https://{v_url}"
+        return v_url.replace("http://", "https://")
 
     if active_tunnel_url and is_public_host(active_tunnel_url):
-        return active_tunnel_url.rstrip("/")
+        clean_tunnel = active_tunnel_url.rstrip("/")
+        return clean_tunnel.replace("http://", "https://")
 
-    # Check active tunnel or launch verified tunnel synchronously if missing
     tunnel = ensure_tunnel()
     if tunnel and is_public_host(tunnel):
-        return tunnel.rstrip("/")
+        clean_tunnel = tunnel.rstrip("/")
+        return clean_tunnel.replace("http://", "https://")
 
     base_env = os.getenv("BASE_URL", "").strip().rstrip("/")
     if base_env and is_public_host(base_env):
-        return base_env
+        return base_env.replace("http://", "https://")
 
     return "http://127.0.0.1:5000"
 
@@ -601,9 +608,14 @@ def generate_ai_response(customer_text: str, customer: Optional[Dict[str, Any]] 
                     "3. Keep your reply super concise (maximum 15 words).\n"
                     "4. Speak naturally without markdown or internal labels."
                 )
-            res = gemini.models.generate_content(model=GEMINI_MODEL, contents=prompt)
-            if res and res.text:
-                ai_text = res.text.strip()
+            for model_candidate in [GEMINI_MODEL, "gemini-2.5-flash", "gemini-1.5-flash"]:
+                try:
+                    res = gemini.models.generate_content(model=model_candidate, contents=prompt)
+                    if res and res.text:
+                        ai_text = res.text.strip()
+                        break
+                except Exception as ex_m:
+                    print(f"[Gemini Model Candidate '{model_candidate}' Error] {ex_m}")
         except Exception as ex:
             print(f"[Gemini API Exception] {ex}")
 
@@ -936,72 +948,40 @@ def is_marwari_accent_active() -> bool:
 @app.route("/api/twilio/voice", methods=["POST", "GET"])
 def twilio_voice():
     """Initial TwiML entry point when call connects."""
-    customer_id = request.args.get("customer_id")
-    phone = request.args.get("phone") or request.form.get("To") or request.form.get("From")
-    customer = find_customer(customer_id=customer_id, phone=phone)
+    try:
+        customer_id = request.args.get("customer_id")
+        phone = request.args.get("phone") or request.form.get("To") or request.form.get("From")
+        customer = find_customer(customer_id=customer_id, phone=phone)
 
-    if customer:
-        customer["status"] = "calling"
-        save_customers_to_disk()
+        if customer:
+            customer["status"] = "calling"
+            save_customers_to_disk()
 
-    base = get_base_url()
-    cid_param = f"?customer_id={customer['id']}" if customer else ""
-    feedback_url = f"{base}/api/twilio/feedback{cid_param}"
+        base = get_base_url()
+        cid_param = f"?customer_id={customer['id']}" if customer else ""
+        feedback_url = f"{base}/api/twilio/feedback{cid_param}"
 
-    response = VoiceResponse()
-    agent_name = get_active_agent_name()
-    c_name = customer["name"] if customer else ""
-    v = get_twilio_voice(get_active_voice())
-    is_marwari = is_marwari_accent_active()
-    stt_lang = "hi-IN" if is_marwari else "en-IN"
+        response = VoiceResponse()
+        agent_name = get_active_agent_name()
+        c_name = customer["name"] if customer else ""
+        v = get_twilio_voice(get_active_voice())
+        is_marwari = is_marwari_accent_active()
+        stt_lang = "hi-IN" if is_marwari else "en-IN"
 
-    if is_marwari:
-        greeting_text = "राम राम सा! मैं बीसीटी फ़ाइबरनेट से बोल रहा हूँ। आपकी इंटरनेट सेवा कैसी चल रही है? थोड़ा फीडबैक दीजिए।"
-        closing_text = "राम राम! आपका दिन अच्छा रहे। बीसीटी फ़ाइबरनेट को समय देने के लिए धन्यवाद।"
-    else:
-        greeting_text = (
-            f"Hello {c_name}! I am {agent_name} from BCT Fibernet, calling for quick feedback on your internet service. "
-            "How is your experience?"
-        )
-        closing_text = "Thank you for your feedback! Goodbye."
+        if is_marwari:
+            greeting_text = "राम राम सा! मैं बीसीटी फ़ाइबरनेट से बोल रहा हूँ। आपकी इंटरनेट सेवा कैसी चल रही है? थोड़ा फीडबैक दीजिए।"
+            closing_text = "राम राम! आपका दिन अच्छा रहे। बीसीटी फ़ाइबरनेट को समय देने के लिए धन्यवाद।"
+        else:
+            greeting_text = (
+                f"Hello {c_name}! I am {agent_name} from BCT Fibernet, calling for quick feedback on your internet service. "
+                "How is your experience?"
+            )
+            closing_text = "Thank you for your feedback! Goodbye."
 
-    if customer:
-        customer["transcript"] = [{"speaker": "ai", "text": greeting_text}]
-        save_customers_to_disk()
+        if customer:
+            customer["transcript"] = [{"speaker": "ai", "text": greeting_text}]
+            save_customers_to_disk()
 
-    gather = response.gather(
-        input="speech",
-        action=feedback_url,
-        method="POST",
-        speech_timeout="auto",
-        language=stt_lang,
-    )
-    gather.say(greeting_text, voice=v)
-
-    response.say(closing_text, voice=v)
-    response.hangup()
-
-    return Response(str(response), status=200, content_type="text/xml")
-
-
-@app.route("/api/twilio/feedback", methods=["POST"])
-def twilio_feedback():
-    """Processes customer speech result and renders conversational response."""
-    customer_id = request.args.get("customer_id")
-    called_phone = request.form.get("To") or request.form.get("From")
-    customer_text = request.form.get("SpeechResult", "").strip()
-    customer = find_customer(customer_id=customer_id, phone=called_phone)
-
-    response = VoiceResponse()
-    base = get_base_url()
-    cid_param = f"?customer_id={customer['id']}" if customer else ""
-    feedback_url = f"{base}/api/twilio/feedback{cid_param}"
-    v = get_twilio_voice(get_active_voice())
-    is_marwari = is_marwari_accent_active()
-    stt_lang = "hi-IN" if is_marwari else "en-IN"
-
-    if not customer_text:
-        no_speech_text = "जी, आपकी आवाज़ थोड़ी साफ़ नहीं आ रही है। एक बार फिर से बताइए।" if is_marwari else "I didn't quite catch that. Could you please tell me about your experience?"
         gather = response.gather(
             input="speech",
             action=feedback_url,
@@ -1009,44 +989,89 @@ def twilio_feedback():
             speech_timeout="auto",
             language=stt_lang,
         )
-        gather.say(no_speech_text, voice=v)
-        return Response(str(response), status=200, content_type="text/xml")
+        gather.say(greeting_text, voice=v)
 
-    if customer:
-        customer.setdefault("feedback", []).append(customer_text)
-        customer.setdefault("transcript", []).append({"speaker": "customer", "text": customer_text})
+        response.say(closing_text, voice=v)
+        response.hangup()
 
-        if customer.get("rating") is None:
-            nums = re.findall(r"\b([1-5])\b", customer_text)
-            if nums:
-                customer["rating"] = int(nums[0])
+        return Response(str(response), status=200, mimetype="text/xml")
+    except Exception as ex:
+        print(f"[Twilio Voice Exception] {ex}")
+        err_resp = VoiceResponse()
+        err_resp.say("Hello! Thank you for calling BCT Fibernet. Have a wonderful day!", voice="Google.en-IN-Wavenet-B")
+        err_resp.hangup()
+        return Response(str(err_resp), status=200, mimetype="text/xml")
 
-        pos_words = ["good", "great", "excellent", "amazing", "wonderful", "awesome", "fast", "love", "nice", "5", "4", "बढ़िया", "सही", "चोखो", "बढिया", "ठीक"]
-        neg_words = ["bad", "poor", "terrible", "horrible", "slow", "delay", "worst", "hate", "1", "2", "खराब", "धीमी", "बेकार", "परेशानी", "बंद"]
-        lower = customer_text.lower()
-        if any(w in lower for w in pos_words):
-            customer["sentiment"] = "Positive"
-        elif any(w in lower for w in neg_words):
-            customer["sentiment"] = "Negative"
-        else:
-            customer["sentiment"] = "Neutral"
 
-    ai_text = generate_ai_response(customer_text, customer)
-    if customer:
-        customer.setdefault("transcript", []).append({"speaker": "ai", "text": ai_text})
+@app.route("/api/twilio/feedback", methods=["POST", "GET"])
+def twilio_feedback():
+    """Processes customer speech result and renders conversational response."""
+    try:
+        customer_id = request.args.get("customer_id")
+        called_phone = request.form.get("To") or request.form.get("From")
+        customer_text = request.form.get("SpeechResult", "").strip()
+        customer = find_customer(customer_id=customer_id, phone=called_phone)
 
-    bye_msg = "राम राम! आपका दिन अच्छा रहे। बीसीटी फ़ाइबरनेट को समय देने के लिए धन्यवाद।" if is_marwari else "Have a fantastic day! Goodbye."
+        response = VoiceResponse()
+        base = get_base_url()
+        cid_param = f"?customer_id={customer['id']}" if customer else ""
+        feedback_url = f"{base}/api/twilio/feedback{cid_param}"
+        v = get_twilio_voice(get_active_voice())
+        is_marwari = is_marwari_accent_active()
+        stt_lang = "hi-IN" if is_marwari else "en-IN"
 
-    # Always deliver response, polite closing, and HANG UP cleanly after feedback
-    response.say(ai_text, voice=v)
-    response.say(bye_msg, voice=v)
-    response.hangup()
+        if not customer_text:
+            no_speech_text = "जी, आपकी आवाज़ थोड़ी साफ़ नहीं आ रही है। एक बार फिर से बताइए।" if is_marwari else "I didn't quite catch that. Could you please tell me about your experience?"
+            gather = response.gather(
+                input="speech",
+                action=feedback_url,
+                method="POST",
+                speech_timeout="auto",
+                language=stt_lang,
+            )
+            gather.say(no_speech_text, voice=v)
+            return Response(str(response), status=200, mimetype="text/xml")
 
-    if customer:
-        customer["status"] = "completed"
-        save_customers_to_disk()
+        if customer:
+            customer.setdefault("feedback", []).append(customer_text)
+            customer.setdefault("transcript", []).append({"speaker": "customer", "text": customer_text})
 
-    return Response(str(response), status=200, content_type="text/xml")
+            if customer.get("rating") is None:
+                nums = re.findall(r"\b([1-5])\b", customer_text)
+                if nums:
+                    customer["rating"] = int(nums[0])
+
+            pos_words = ["good", "great", "excellent", "amazing", "wonderful", "awesome", "fast", "love", "nice", "5", "4", "बढ़िया", "सही", "चोखो", "बढिया", "ठीक"]
+            neg_words = ["bad", "poor", "terrible", "horrible", "slow", "delay", "worst", "hate", "1", "2", "खराब", "धीमी", "बेकार", "परेशानी", "बंद"]
+            lower = customer_text.lower()
+            if any(w in lower for w in pos_words):
+                customer["sentiment"] = "Positive"
+            elif any(w in lower for w in neg_words):
+                customer["sentiment"] = "Negative"
+            else:
+                customer["sentiment"] = "Neutral"
+
+        ai_text = generate_ai_response(customer_text, customer)
+        if customer:
+            customer.setdefault("transcript", []).append({"speaker": "ai", "text": ai_text})
+
+        bye_msg = "राम राम! आपका दिन अच्छा रहे। बीसीटी फ़ाइबरनेट को समय देने के लिए धन्यवाद।" if is_marwari else "Have a fantastic day! Goodbye."
+
+        response.say(ai_text, voice=v)
+        response.say(bye_msg, voice=v)
+        response.hangup()
+
+        if customer:
+            customer["status"] = "completed"
+            save_customers_to_disk()
+
+        return Response(str(response), status=200, mimetype="text/xml")
+    except Exception as ex:
+        print(f"[Twilio Feedback Exception] {ex}")
+        err_resp = VoiceResponse()
+        err_resp.say("Thank you for your valuable feedback! Have a great day.", voice="Google.en-IN-Wavenet-B")
+        err_resp.hangup()
+        return Response(str(err_resp), status=200, mimetype="text/xml")
 
 
 @app.route("/api/twilio/status", methods=["POST"])

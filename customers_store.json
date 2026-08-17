@@ -5,26 +5,26 @@
     "phone": "+919057262630",
     "status": "completed",
     "feedback": [
-      "\u0917\u0941\u0921 \u0938\u0930\u094d\u0935\u093f\u0938!"
+      "Great internet speed"
     ],
     "rating": null,
-    "sentiment": "Neutral",
+    "sentiment": "Positive",
     "transcript": [
       {
         "speaker": "ai",
-        "text": "\u0930\u093e\u092e \u0930\u093e\u092e \u0938\u093e! \u092e\u0948\u0902 \u092c\u0940\u0938\u0940\u091f\u0940 \u092b\u093c\u093e\u0907\u092c\u0930\u0928\u0947\u091f \u0938\u0947 \u092c\u094b\u0932 \u0930\u0939\u093e \u0939\u0942\u0901\u0964 \u0906\u092a\u0915\u0940 \u0907\u0902\u091f\u0930\u0928\u0947\u091f \u0938\u0947\u0935\u093e \u0915\u0948\u0938\u0940 \u091a\u0932 \u0930\u0939\u0940 \u0939\u0948? \u0925\u094b\u0921\u093c\u093e \u092b\u0940\u0921\u092c\u0948\u0915 \u0926\u0940\u091c\u093f\u090f\u0964"
+        "text": "Hello Vikas Kumar! I am Rohan from BCT Fibernet, calling for quick feedback on your internet service. How is your experience?"
       },
       {
         "speaker": "customer",
-        "text": "\u0917\u0941\u0921 \u0938\u0930\u094d\u0935\u093f\u0938!"
+        "text": "Great internet speed"
       },
       {
         "speaker": "ai",
-        "text": "\u0906\u092a\u0915\u0940 \u092a\u094d\u0930\u0924\u093f\u0915\u094d\u0930\u093f\u092f\u093e \u0915\u0947 \u0932\u093f\u090f \u092c\u0940\u0938\u0940\u091f\u0940 \u092b\u093c\u093e\u0907\u092c\u0930\u0928\u0947\u091f \u0915\u0940 \u0913\u0930 \u0938\u0947 \u092c\u0939\u0941\u0924-\u092c\u0939\u0941\u0924 \u0927\u0928\u094d\u092f\u0935\u093e\u0926!"
+        "text": "That is so wonderful to hear! Thank you for your feedback."
       }
     ],
     "created_at": "2026-08-17 13:08",
-    "last_call": "15:24:11",
-    "call_sid": "CA017ecdd88f2624bd323dd0a01e67d84c"
+    "last_call": "16:25:25",
+    "call_sid": "CAb2c650581224927920986a8e080619e4"
   }
 ]
